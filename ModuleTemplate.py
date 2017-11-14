@@ -19,8 +19,8 @@ class ModuleTemplate:
     parameters = ""
 
     """
-        The command name used to call this module
-        in this case is '/foo'
+        The command name used to call this module, in this case is '/foo'
+        Please remember to check clashes between aliases of different modules
     """
     alias = "foo"
 
@@ -83,6 +83,10 @@ class ModuleTemplate:
         you must respond to /q command (force quit) in this method
     """
     def msg_handler(self, msg):
+        """
+        It is recommended that you only write code that handles interaction like itchat.send() here, 
+        putting calculations, IO and other methods outside
+        """
         pass
 
     """
@@ -104,12 +108,17 @@ class ModuleTemplate:
         This method accepts the from_user, which is the WeChat user ID, and args,
         the list of arguments passed from the command line.
         This method can be blocking
-        """
+    """
     @staticmethod
     def call(from_user, args):
 
         # this line is extremely important since this method will be executed in a separated process
         itchat.auto_login(hotReload=True)
+
+        """
+            It is recommended that you only write code that call itchat.send() here.
+            Calculations, IO and other methods shall be written in helper methods
+        """
 
         pass
 

@@ -48,7 +48,7 @@ class Factorize:
             if n == 1:
                 break
 
-        # append the number to the numpy array after it has been divided by the factors below sqrt(n)
+        # append the number to the numpy array after it has been divided by all factors below sqrt(n)
         # if there's exactly only one space left
         if counter == factors.size:
             temp = np.zeros(factors.size + 1, np.uint64)
@@ -57,7 +57,7 @@ class Factorize:
             factors[factors.size] = n
             return factors
 
-        # if there are extra spaces, delete these spaces
+        # if there are extra spaces, delete them
         else:
             num_of_zeros = 0
             for j in factors:

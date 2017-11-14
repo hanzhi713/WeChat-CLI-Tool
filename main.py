@@ -1,6 +1,7 @@
 import itchat
 from itchat.content import *
-import os, multiprocessing
+import os
+import multiprocessing
 
 if __name__ == "__main__":
 
@@ -9,6 +10,8 @@ if __name__ == "__main__":
     for file in os.listdir('./modules'):
         if file.find('.py') > -1:
             module_name = file.split('.')[0]
+
+            # import the main class
             mod = getattr(__import__('modules.' + module_name, fromlist=['*']), module_name)
 
             # create command key
@@ -16,94 +19,97 @@ if __name__ == "__main__":
 
     print(modules)
 
-    # for interactive modules
-    global_lock = None
-
-    # for non-interactive modules
-    current_process = None
-    current_process_cmd = None
+    session_objects = dict()
+    session_processes = dict()
 
     @itchat.msg_register(TEXT)
     def msg_listener(msg):
-        global global_lock, current_process, current_process_cmd
-
-        if current_process is not None:
-            if current_process.is_alive():
-                if msg['Text'] == '/q':
-                    current_process.terminate()
-                    itchat.send_msg("{} is terminated".format(current_process_cmd), msg['FromUserName'])
-                    current_process = None
-                    current_process_cmd = None
-                    return
-                else:
-                    itchat.send_msg("{} is running".format(current_process_cmd), msg['FromUserName'])
-                    return
-            else:
-                current_process = None
-                current_process_cmd = None
-
-        if global_lock is not None and global_lock.finished:
-            global_lock = None
-
-        # if previous interaction is not ended
-        if global_lock is not None:
-            if global_lock.msg_handler(msg):
-                global_lock = None
+        global session_objects, session_processes
 
         # when new commands are received
-        else:
-            cmd = msg['Text']
-            from_user = msg['FromUserName']
+        cmd = msg['Text']
+        from_user = msg['FromUserName']
 
-            # if this is really a command
-            if cmd[:1] == "/":
-                cmd = cmd[1:].split(' ')
-                if cmd[0] == 'help':
+        current_process_info = session_processes.get(from_user, None)
+        current_object = session_objects.get(from_user, None)
+
+        if current_process_info is not None:
+            if current_process_info[0].is_alive():
+                if cmd == '/q':
+                    current_process_info[0].terminate()
+                    itchat.send_msg("{} is terminated".format(current_process_info[1]), from_user)
+                    del session_processes[from_user]
+                    return
+                else:
+                    itchat.send_msg("{} is running".format(current_process_info[1]), from_user)
+                    return
+            else:
+                del session_processes[from_user]
+
+        # if previous interaction is not ended
+        if current_object is not None:
+            if current_object.finished:
+                del session_objects[from_user]
+                return
+            else:
+                if current_object.msg_handler(msg):
+                    del session_objects[from_user]
+
+        # if this is really a command
+        if cmd[:1] == "/":
+
+            # parse command and arguments
+            cmd = cmd[1:].split(' ')
+            if cmd[0] == 'help':
+                try:
+                    modules[cmd[1]].help(from_user)
+                except:
+                    keys = list(modules.keys())
+                    keys.sort()
+                    for module_name in keys:
+                        modules[module_name].help(from_user)
+
+            elif cmd[0] in modules.keys():
+                mod = modules[cmd[0]]
+
+                # interaction required -> create new object to handle message
+                if mod.interactive:
                     try:
-                        modules[cmd[1]].help(from_user)
+                        session_objects[from_user] = mod(from_user, cmd[1:])
                     except:
-                        keys = list(modules.keys())
-                        keys.sort()
-                        for module_name in keys:
-                            modules[module_name].help(from_user)
+                        pass
+                        # itchat.send_msg("Error when executing {}".format("/" + cmd[0]))
 
-                elif cmd[0] in modules.keys():
-                    mod = modules[cmd[0]]
+                # no interaction -> static method call
+                else:
 
-                    # interaction required -> create new object to handle message
-                    if mod.interactive:
+                    # fast_execution -> call in main process
+                    if mod.fast_execution:
                         try:
-                            global_lock = mod(from_user, cmd[1:])
+                            mod.call(from_user, cmd[1:])
                         except:
                             pass
                             # itchat.send_msg("Error when executing {}".format("/" + cmd[0]))
 
-                    # no interaction -> static method call
+                    # fast_execution -> create a new process
                     else:
-                        if mod.fast_execution:
-                            try:
-                                mod.call(from_user, cmd[1:])
-                            except:
-                                pass
-                                # itchat.send_msg("Error when executing {}".format("/" + cmd[0]))
-                        else:
-                            current_process = multiprocessing.Process(target=mod.call, args=(from_user, cmd[1:],))
-                            current_process.start()
-                            current_process_cmd = cmd[0]
+                        session_processes[from_user] = [multiprocessing.Process(target=mod.call, args=(from_user, cmd[1:],)), cmd[0]]
+                        session_processes[from_user][0].start()
 
-                else:
-                    itchat.send_msg("\n".join(["Non-existent command {}".format("/" + cmd[0]),
-                                               "Type /help to see all available commands",
-                                               "Type /help [command] to get instructions on a specific command"]),
-                                    from_user)
+            else:
+                itchat.send_msg("\n".join(["Non-existent command {}".format("/" + cmd[0]),
+                                           "Type /help to see all available commands",
+                                           "Type /help [command] to get instructions on a specific command"]),
+                                from_user)
 
 
     @itchat.msg_register([PICTURE, RECORDING, ATTACHMENT, VIDEO])
     def file_listener(file):
-        global global_lock
-        if global_lock is not None:
-            if global_lock.file_handler(file):
-                global_lock = None
+        global session_objects
+        from_user = file['FromUserName']
+        if session_objects[from_user] is not None:
+            if session_objects[from_user].file_handler(file):
+                del session_objects[from_user]
 
 
     itchat.auto_login(hotReload=True)
