@@ -5,7 +5,7 @@ import multiprocessing
 
 if __name__ == "__main__":
 
-    # load modules
+    # load modules in ./modules folder
     modules = dict()
     for file in os.listdir('./modules'):
         if file.find('.py') > -1:
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         cmd = msg['Text']
         from_user = msg['FromUserName']
 
-        # get user session
+        # get the user session
         current_process_info = session_processes.get(from_user, None)
         current_object = session_objects.get(from_user, None)
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
             else:
                 del session_processes[from_user]
 
-        # if previous session is not ended
+        # if the previous session is not ended
         if current_object is not None:
             if current_object.finished:
                 del session_objects[from_user]
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             elif cmd[0] in modules.keys():
                 mod = modules[cmd[0]]
 
-                # interaction required -> create new object to handle message
+                # interaction required -> create a new object to handle message
                 if mod.interactive:
                     try:
                         session_objects[from_user] = mod(from_user, cmd[1:])
@@ -86,7 +86,7 @@ if __name__ == "__main__":
                 # no interaction -> static method call
                 else:
 
-                    # fast_execution -> call in main process
+                    # fast_execution -> call in the main thread
                     if mod.fast_execution:
                         try:
                             mod.call(from_user, cmd[1:])
