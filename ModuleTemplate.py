@@ -39,7 +39,8 @@ class ModuleTemplate:
         You don't need this parameter if interactive = True
         
         if your call() method will be completed within a second or is non-blocking, then set this to True
-        this prevents executing call() in a separated process, which means you don't need to execute itchat.auto_login(hotReload=True)
+        this prevents executing call() in a separated process, 
+        which means you don't need to execute itchat.auto_login(hotReload=True) that often takes a second to complete
     """
     fast_execution = False
 
@@ -112,7 +113,10 @@ class ModuleTemplate:
     @staticmethod
     def call(from_user, args):
 
-        # this line is extremely important since this method will be executed in a separated process
+        """
+            You must keep this line if fast_execution == False
+            You should remove this line if fast_execution == True
+        """
         itchat.auto_login(hotReload=True)
 
         """

@@ -1,4 +1,4 @@
-## Wechat Command-Line Tool
+## WeChat Command-Line Tool
 #### Execute main.py, scan the QR code to login, then you are good to go
 #### Dependencies:
 ##### itchat, opencv-python, numba and primesieve

@@ -19,6 +19,7 @@ if __name__ == "__main__":
 
     print(modules)
 
+    # dictionaries which store user sessions objects (interaction) and processes (static call)
     session_objects = dict()
     session_processes = dict()
 
@@ -30,6 +31,7 @@ if __name__ == "__main__":
         cmd = msg['Text']
         from_user = msg['FromUserName']
 
+        # get user session
         current_process_info = session_processes.get(from_user, None)
         current_object = session_objects.get(from_user, None)
 
@@ -46,7 +48,7 @@ if __name__ == "__main__":
             else:
                 del session_processes[from_user]
 
-        # if previous interaction is not ended
+        # if previous session is not ended
         if current_object is not None:
             if current_object.finished:
                 del session_objects[from_user]
@@ -58,7 +60,7 @@ if __name__ == "__main__":
         # if this is really a command
         if cmd[:1] == "/":
 
-            # parse command and arguments
+            # parse the command and arguments
             cmd = cmd[1:].split(' ')
             if cmd[0] == 'help':
                 try:
@@ -76,6 +78,7 @@ if __name__ == "__main__":
                 if mod.interactive:
                     try:
                         session_objects[from_user] = mod(from_user, cmd[1:])
+                        itchat.send_msg("Type /q to quit", from_user)
                     except:
                         pass
                         # itchat.send_msg("Error when executing {}".format("/" + cmd[0]))
@@ -95,6 +98,7 @@ if __name__ == "__main__":
                     else:
                         session_processes[from_user] = [multiprocessing.Process(target=mod.call, args=(from_user, cmd[1:],)), cmd[0]]
                         session_processes[from_user][0].start()
+                        itchat.send_msg("Type /q to quit", from_user)
 
             else:
                 itchat.send_msg("\n".join(["Non-existent command {}".format("/" + cmd[0]),

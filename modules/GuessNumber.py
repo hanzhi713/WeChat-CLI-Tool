@@ -34,7 +34,7 @@ class GuessNumber:
         self.trials = 0
         self.finished = False
         self.send_separator(from_user)
-        itchat.send_msg("Guessing between {} and {}\nType /q to quit the game".format(lower, upper), from_user)
+        itchat.send_msg("Guessing between {} and {}".format(lower, upper), from_user)
 
     def msg_handler(self, msg):
         from_user = msg['FromUserName']
