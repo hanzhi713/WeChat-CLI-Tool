@@ -56,6 +56,7 @@ if __name__ == "__main__":
             else:
                 if current_object.msg_handler(msg):
                     del session_objects[from_user]
+                    return
 
         # if this is really a command
         if cmd[:1] == "/":
@@ -111,7 +112,7 @@ if __name__ == "__main__":
     def file_listener(file):
         global session_objects
         from_user = file['FromUserName']
-        if session_objects[from_user] is not None:
+        if session_objects.get(from_user, None) is not None:
             if session_objects[from_user].file_handler(file):
                 del session_objects[from_user]
 

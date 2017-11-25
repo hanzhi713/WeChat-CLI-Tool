@@ -94,7 +94,7 @@ class Factorize:
             # record factors
             factors.extend(current_factors[0:current_factors.size - 1])
 
-            # get the unfactorized past
+            # get the unfactorized part
             remain = current_factors[current_factors.size - 1]
             del prime_list
 
