@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-#  -*- coding: utf-8 -*-
-
-
+from modules.__templates__ import Static
 import numba
 from primesieve.numpy import *
 import numpy as np
@@ -9,22 +6,14 @@ from math import ceil, sqrt
 import itchat
 
 
-class Factorize:
+class Factorize(Static):
     __author__ = "Hanzhi Zhou"
     title = "Fast Factorization Algorithm"
     parameters = "[number]"
     description = "Find all prime factors of a positive integer less than 2^64"
     alias = "fc"
-    interactive = False
     fast_execution = False
     maximum = 2**64 - 1
-
-    @staticmethod
-    def help(from_user):
-        my_class = Factorize
-        itchat.send_msg("\n\t".join(["/{} {}".format(my_class.alias, my_class.parameters),
-                                 "{} by {}".format(my_class.title, my_class.__author__),
-                                 my_class.description]), from_user)
 
     @staticmethod
     @numba.jit(numba.uint64[:](numba.uint64, numba.uint64[:]), nopython=True, cache=True)

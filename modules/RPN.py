@@ -1,4 +1,5 @@
-import re, itchat
+from modules.__templates__ import Static
+import itchat
 from math import *
 
 
@@ -15,7 +16,7 @@ class Stack:
     def is_empty(self):
         return self.items == []
 
-class RPN:
+class RPN(Static):
     __author__ = "Hanzhi Zhou"
     title = "RPN Calculator"
     description = "\n".join(["Evaluate a postfix expression or convert it to infix expression",
@@ -23,7 +24,6 @@ class RPN:
                              "which returns 1.0-2.0"])
     parameters = "<eval|conv> [expression]"
     alias = "rpn"
-    interactive = False
     fast_execution = True
 
     one_param_func = ["sin", "cos", "tan", "atan", "acos", "asin", "floor", "ceil", "factorial"
@@ -31,12 +31,6 @@ class RPN:
 
     two_param_func = ["round", "log", "pow", "atan2", "gcd"]
 
-    @staticmethod
-    def help(from_user):
-        my_class = RPN
-        itchat.send_msg("\n\t".join(["/{} {}".format(my_class.alias, my_class.parameters),
-                                     "{} by {}".format(my_class.title, my_class.__author__),
-                                     my_class.description]), from_user)
     @staticmethod
     def eval_postfix(expr):
         # token_list = re.split("([^0-9^A-Za-z])", expr)

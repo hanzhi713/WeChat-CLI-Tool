@@ -1,26 +1,20 @@
+from modules.__templates__ import Interactive
 import numpy as np
-import cv2, time
+import cv2
+import time
 import itchat
 import os
 import multiprocessing
 
 
-class ImgTrans:
+class ImgTrans(Interactive):
     alias = "imgtf"
-    interactive = True
     __author__ = "Hanzhi Zhou"
     title = "Image Transformation"
     description = "\n".join(["Perform arbitrary image transformation by complex mapping",
                              "Example: /imgtf c:c**1.2 5,",
                              "which will perform a complex mapping f(c)->c^1.2 on the image you sent then smooth it with convolution kernel of size 5*5"])
     parameters = "[function] [kernel size]"
-
-    @staticmethod
-    def help(from_user):
-        my_class = ImgTrans
-        itchat.send_msg("\n\t".join(["/{} {}".format(my_class.alias, my_class.parameters),
-                                     "{} by {}".format(my_class.title, my_class.__author__),
-                                     my_class.description]), from_user)
 
     # convert the sparse matrix dictionary (mapping (x, y) to (b, g, r)) to a numpy three dimensional array
     @staticmethod
@@ -62,6 +56,7 @@ class ImgTrans:
         return f(c)
 
     def __init__(self, from_user, args):
+        Interactive.__init__(self, from_user, args)
         try:
             f = eval("lambda " + args[0])
             if type(f(complex(0, 0))) != complex:
@@ -70,7 +65,6 @@ class ImgTrans:
             self.f = args[0]
             self.kernel = int(args[1])
             self.proc = None
-            self.finished = False
         except AssertionError:
             raise Exception
         except:
@@ -79,9 +73,6 @@ class ImgTrans:
 
         self.send_separator(from_user)
         itchat.send_msg("Please send an image", from_user)
-
-    def send_separator(self, dst):
-        itchat.send_msg("-" * 30, dst)
 
     def msg_handler(self, msg):
         if msg['Text'] == '/q':

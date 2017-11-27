@@ -1,3 +1,4 @@
 itchat.pkl
 modules/VoiceToText.py
-test.py
+/tests/
+modules/__pycache__

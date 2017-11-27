@@ -9,6 +9,9 @@ if __name__ == "__main__":
     modules = dict()
     for file in os.listdir('./modules'):
         if file.find('.py') > -1:
+            if file == "__templates__.py":
+                continue
+
             module_name = file.split('.')[0]
 
             # import the main class

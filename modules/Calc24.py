@@ -1,21 +1,14 @@
+from modules.__templates__ import Static
 import itchat
 
 
-class Calc24:
+class Calc24(Static):
     __author__ = "Fangchen Chen"
     alias = "calc24"
     parameters = "[n1] [n2] [n3] [n4]"
     title = "24 Point Calculation"
     description = "Find an arithmetic combination, if exists, of four integers that equals to 24"
-    interactive = False
     fast_execution = True
-
-    @staticmethod
-    def help(from_user):
-        my_class = Calc24
-        itchat.send_msg("\n\t".join(["/{} {}".format(my_class.alias, my_class.parameters),
-                                 "{} by {}".format(my_class.title, my_class.__author__),
-                                 my_class.description]), from_user)
 
     @staticmethod
     def call(from_user, args):

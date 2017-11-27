@@ -1,23 +1,17 @@
+from modules.__templates__ import Interactive
 import itchat
 import random
 
 
-class GuessNumber:
+class GuessNumber(Interactive):
     __author__ = "Fangchen Chen"
     parameters = "[lower] [upper]"
     alias = "gn"
-    interactive = True
     title = "Number Guessing Game"
     description = "Guess a number which the computer randomly generates in a give range"
 
-    @staticmethod
-    def help(from_user):
-        my_class = GuessNumber
-        itchat.send_msg("\n\t".join(["/{} {}".format(my_class.alias, my_class.parameters),
-                                     "{} by {}".format(my_class.title, my_class.__author__),
-                                     my_class.description]), from_user)
-
     def __init__(self, from_user, args):
+        Interactive.__init__(self, from_user, args)
         try:
             lower = int(args[0])
             upper = int(args[1])
@@ -64,9 +58,3 @@ class GuessNumber:
             self.send_separator(from_user)
             self.finished = True
             return True
-
-    def file_handler(self, file):
-        return False
-
-    def send_separator(self, dst):
-        itchat.send_msg("-" * 30, dst)
