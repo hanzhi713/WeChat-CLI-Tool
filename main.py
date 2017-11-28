@@ -84,7 +84,7 @@ if __name__ == "__main__":
                         session_objects[from_user] = mod(from_user, cmd[1:])
                         itchat.send_msg("Type /q to quit", from_user)
                     except:
-                        traceback.format_exc()
+                        traceback.print_exc()
                         # itchat.send_msg("Error when executing {}".format("/" + cmd[0]))
 
                 # no interaction -> static method call
@@ -95,7 +95,7 @@ if __name__ == "__main__":
                         try:
                             mod.call(from_user, cmd[1:])
                         except:
-                            traceback.format_exc()
+                            traceback.print_exc()
                             # itchat.send_msg("Error when executing {}".format("/" + cmd[0]))
 
                     # fast_execution -> create a new process

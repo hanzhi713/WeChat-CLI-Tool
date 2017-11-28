@@ -3,19 +3,6 @@ import itchat
 from math import *
 
 
-class Stack:
-    def __init__(self):
-        self.items = []
-
-    def push(self, item):
-        self.items.append(item)
-
-    def pop(self):
-        return self.items.pop()
-
-    def is_empty(self):
-        return self.items == []
-
 class RPN(Static):
     __author__ = "Hanzhi Zhou"
     title = "RPN Calculator"
@@ -33,62 +20,60 @@ class RPN(Static):
 
     @staticmethod
     def eval_postfix(expr):
-        # token_list = re.split("([^0-9^A-Za-z])", expr)
         token_list = expr
-        stack = Stack()
+        stack = []
         for token in token_list:
             if token == "" or token == " ":
                 continue
             if token in "+-*/":
                 o1 = stack.pop()
                 o2 = stack.pop()
-                stack.push(eval("o2" + token + "o1"))
+                stack.append(eval("o2" + token + "o1"))
             elif token in RPN.one_param_func:
-                stack.push(eval(token + "(stack.pop())"))
+                stack.append(eval(token + "(stack.pop())"))
             elif token in RPN.two_param_func:
                 o1 = stack.pop()
                 o2 = stack.pop()
-                stack.push(eval(token + "(o2, o1)"))
+                stack.append(eval(token + "(o2, o1)"))
             elif token == "^":
                 o1 = stack.pop()
                 o2 = stack.pop()
-                stack.push(o2 ** o1)
+                stack.append(o2 ** o1)
             else:
                 try:
-                    stack.push(float(token))
+                    stack.append(float(token))
                 except:
                     continue
         return stack.pop()
 
     @staticmethod
     def post_to_in(expr):
-        # token_list = re.split("([^0-9^A-Za-z])", expr)
         token_list = expr
-        stack = Stack()
+        stack = []
         for token in token_list:
             if token == "" or token == " ":
                 continue
             if token in "+-":
                 o1 = stack.pop()
                 o2 = stack.pop()
-                stack.push("(" + str(o2) + token + str(o1) + ")")
+                stack.append("(" + str(o2) + token + str(o1) + ")")
             elif token in "*/^":
                 o1 = stack.pop()
                 o2 = stack.pop()
-                stack.push(str(o2) + token + str(o1))
+                stack.append(str(o2) + token + str(o1))
             elif token in RPN.one_param_func:
-                stack.push(token + "(" + str(stack.pop()) + ")")
+                stack.append(token + "(" + str(stack.pop()) + ")")
             elif token in RPN.two_param_func:
                 o1 = stack.pop()
                 o2 = stack.pop()
-                stack.push(token + "(" + str(o2) + "," + str(o1) + ")")
+                stack.append(token + "(" + str(o2) + "," + str(o1) + ")")
             else:
                 try:
-                    stack.push(float(token))
+                    stack.append(float(token))
                 except:
                     continue
         st = ''
-        for i in stack.items:
+        for i in stack:
             st += str(i)
 
         # remove the outermost parentheses (if abundant)
