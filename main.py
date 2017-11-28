@@ -76,6 +76,11 @@ if __name__ == "__main__":
                         modules[module_name].help(from_user)
 
             elif cmd[0] in modules.keys():
+
+                if len(session_objects.keys()) + len(session_processes.keys()) > 10:
+                    itchat.send_msg('Too many people sending commands. Please try again later.', from_user)
+                    return
+
                 mod = modules[cmd[0]]
 
                 # interaction required -> create a new object to handle message
