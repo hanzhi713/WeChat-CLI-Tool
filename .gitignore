@@ -2,3 +2,4 @@ itchat.pkl
 modules/VoiceToText.py
 /tests/
 modules/__pycache__
+modules/__secrets__.py
