@@ -3,6 +3,6 @@
 #### Dependencies:
 ##### itchat, opencv-python, numba and primesieve
 
-Though it is ok to use mine, I suggest you to use your own Tuling and Face++ API key.
+You may need to get Tuling Chatbot API key and Face++ API key if you want to use Tuling.py and FaceAnalysis.py
 
 If you want to write your own command-line module, please refer to ModuleTemplate.py for details.
