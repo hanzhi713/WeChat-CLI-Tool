@@ -2,6 +2,7 @@ import itchat
 from itchat.content import *
 import os
 import multiprocessing
+import traceback
 
 if __name__ == "__main__":
 

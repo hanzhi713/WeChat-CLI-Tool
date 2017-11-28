@@ -3,6 +3,6 @@
 #### Dependencies:
 ##### itchat, opencv-python, numba and primesieve
 
-Though it is ok to use mine, I suggest you to use your own Tuling API key.
+Though it is ok to use mine, I suggest you to use your own Tuling and Face++ API key.
 
 If you want to write your own command-line module, please refer to ModuleTemplate.py for details.

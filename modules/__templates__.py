@@ -109,10 +109,6 @@ class Static(ModuleBasics):
     @staticmethod
     def call(from_user, args):
         """
-            Please delete this method if interactive = True
-
-            This method must exist if interactive = False
-
             This method accepts the from_user, which is the WeChat user ID, and args,
             the list of arguments passed from the command line.
             This method can be blocking
