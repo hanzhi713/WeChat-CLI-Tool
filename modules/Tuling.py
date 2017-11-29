@@ -23,6 +23,7 @@ class Tuling(Interactive):
             self.finished = True
             return True
 
+        Tuling.num_of_reqs += 1
         response = self.post_data(txt)
         code = response["code"]
         if code == 100000:

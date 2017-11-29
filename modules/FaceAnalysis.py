@@ -67,6 +67,7 @@ class FaceAnalysis(Interactive):
         self.file_name.append(file_name)
         file.download(file_name)
         itchat.send_msg("Processing image...", file['FromUserName'])
+        FaceAnalysis.num_of_reqs += 1
         self.proc.append(multiprocessing.Process(target=self.exec_task, args=(file_name, file['FromUserName'],)))
         self.proc[len(self.proc) - 1].start()
 
