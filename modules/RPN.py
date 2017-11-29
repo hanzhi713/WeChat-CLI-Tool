@@ -5,13 +5,14 @@ from math import *
 
 class RPN(Static):
     __author__ = "Hanzhi Zhou"
-    title = "RPN Calculator"
+    title = "Reverse Polish Notation (RPN) Calculator"
     description = "\n".join(["Evaluate a postfix expression or convert it to infix expression",
-                             "Example: /rpn conv 1 2 -",
                              "which returns 1.0-2.0"])
     parameters = "<eval|conv> [expression]"
     alias = "rpn"
     fast_execution = True
+
+    example = "Example: /rpn conv 1 2 -",
 
     one_param_func = ["sin", "cos", "tan", "atan", "acos", "asin", "floor", "ceil", "factorial"
     , "radians", "degrees", "sinh", "cosh", "tanh", "acosh", "asinh", "atanh"]

@@ -2,7 +2,6 @@ import itchat
 
 
 class ModuleBasics:
-
     # your name
     __author__ = "Anonymous"
 
@@ -29,15 +28,30 @@ class ModuleBasics:
     # Give a fancy title to your module!
     title = "foobar"
 
+    # Give an example of using your module
+    example = "/foo"
+
     @classmethod
     def help(cls, from_user):
         """
-            print the instructions of this command when /help or /help <alias> is invoked
+            print the instructions of this command when /help <alias> is invoked
             generally there's no need to override this method
         """
-        itchat.send_msg("\n\t".join(["/{} {}".format(cls.alias, cls.parameters),
-                                     "{} by {}".format(cls.title, cls.__author__),
-                                     cls.description]), from_user)
+        ins = ["/{} {}".format(cls.alias, cls.parameters),
+               "{} by {}".format(cls.title, cls.__author__)]
+        if cls.description != "":
+            ins.append(cls.description)
+        if cls.example != "":
+            ins.append(cls.example)
+        itchat.send_msg("\n\t".join(ins), from_user)
+
+    @classmethod
+    def help_brief(cls, from_user):
+        """
+            print a brief info about this module when /help is invoked
+            generally there's no need to override this method
+        """
+        itchat.send_msg("/{} {}".format(cls.alias, cls.parameters), from_user)
 
 
 class Interactive(ModuleBasics):

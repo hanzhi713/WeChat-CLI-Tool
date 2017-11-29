@@ -12,6 +12,7 @@ class Factorize(Static):
     parameters = "[number]"
     description = "Find all prime factors of a positive integer less than 2^64"
     alias = "fc"
+    example = "Example: /fc 123801238094213"
     fast_execution = False
     maximum = 2**64 - 1
 

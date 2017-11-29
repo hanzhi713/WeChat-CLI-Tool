@@ -12,9 +12,9 @@ class ImgTrans(Interactive):
     __author__ = "Hanzhi Zhou"
     title = "Image Transformation"
     description = "\n".join(["Perform arbitrary image transformation by complex mapping",
-                             "Example: /imgtf c:c**1.2 5,",
                              "which will perform a complex mapping f(c)->c^1.2 on the image you sent then smooth it with convolution kernel of size 5*5"])
     parameters = "[function] [kernel size]"
+    example = "Example: /imgtf c:c**1.2 5,"
 
     # convert the sparse matrix dictionary (mapping (x, y) to (b, g, r)) to a numpy three dimensional array
     @staticmethod

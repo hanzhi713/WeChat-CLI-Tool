@@ -3,6 +3,7 @@ from itchat.content import *
 import os
 import multiprocessing
 import traceback
+import re
 
 if __name__ == "__main__":
 
@@ -65,7 +66,10 @@ if __name__ == "__main__":
         if cmd[:1] == "/":
 
             # parse the command and arguments
-            cmd = cmd[1:].split(' ')
+            cmd = re.split(" +", cmd[1:])
+            if cmd[-1] == "":
+                del cmd[-1]
+
             if cmd[0] == 'help':
                 try:
                     modules[cmd[1]].help(from_user)
@@ -73,7 +77,7 @@ if __name__ == "__main__":
                     keys = list(modules.keys())
                     keys.sort()
                     for module_name in keys:
-                        modules[module_name].help(from_user)
+                        modules[module_name].help_brief(from_user)
 
             elif cmd[0] in modules.keys():
 
@@ -112,7 +116,7 @@ if __name__ == "__main__":
             else:
                 itchat.send_msg("\n".join(["Non-existent command {}".format("/" + cmd[0]),
                                            "Type /help to see all available commands",
-                                           "Type /help [command] to get instructions on a specific command"]),
+                                           "Type /help [command] to get detailed instructions on a specific command"]),
                                 from_user)
 
 

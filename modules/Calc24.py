@@ -1,5 +1,6 @@
 from modules.__templates__ import Static
-import itchat, itertools
+import itchat
+import itertools
 
 
 class Calc24(Static):
@@ -8,6 +9,7 @@ class Calc24(Static):
     parameters = "[n1] [n2] [n3] [n4]"
     title = "24 Point Calculation"
     description = "Find an arithmetic combination, if exists, of four integers that equals to 24"
+    example = "Example: /calc24 2 4 6 8"
     fast_execution = True
 
     @staticmethod

@@ -21,7 +21,10 @@ class FaceAnalysis(Interactive):
     }
     description = "Let the machine evaluate your face\nChoose one or more of the following attributes\n\t" + ", ".join(
         ['gender', 'age', 'smiling', 'headpose', 'eyestatus', 'emotion', 'ethnicity',
-         'beauty', 'mouthstatus', 'eyegaze', 'skinstatus'])
+         'beauty', 'mouthstatus', 'eyegaze',
+         'skinstatus']) + "\nNote that your request might not succeed if the image you sent contains more than 5 faces"
+
+    example = "Example: /face age beauty"
 
     num_of_reqs = 0
 
@@ -40,7 +43,7 @@ class FaceAnalysis(Interactive):
             self.send_separator(from_user)
             self.file_name = []
             self.proc = []
-            itchat.send_msg("Please send an image with face(s) in it", from_user)
+            itchat.send_msg("Please send an image with face(s) in it. You can send multiple images.", from_user)
 
         except AssertionError:
             raise Exception
@@ -61,6 +64,9 @@ class FaceAnalysis(Interactive):
             self.finished = True
             self.send_separator(from_user)
             return True
+        else:
+            itchat.send_msg("If you want to switch command, please type /q to quit current session first", from_user)
+            return False
 
     def file_handler(self, file):
         file_name = "{}-{}".format(len(self.file_name), file.fileName)
@@ -107,7 +113,9 @@ class FaceAnalysis(Interactive):
                                     cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
                         if face.get('attributes', None) is not None:
                             msgs.append("Face {}: \n".format(i + 1) + str(
-                                "\n".join([attr + ": " + str(face['attributes'][FaceAnalysis.attributes_map[attr]]) for attr in self.attr])))
+                                "\n".join(
+                                    [attr + ": " + str(face['attributes'][FaceAnalysis.attributes_map[attr]]) for attr
+                                     in self.attr])))
 
                     cv2.imwrite("result-{}".format(file_name), pic, (cv2.IMWRITE_PNG_COMPRESSION, 9))
                     itchat.send_image("result-{}".format(file_name), from_user)
@@ -117,7 +125,7 @@ class FaceAnalysis(Interactive):
                     itchat.send_msg("No face detected!", from_user)
         except:
             print(traceback.format_exc())
-            itchat.send_msg("Error!", from_user)
+            itchat.send_msg("Error! Maybe your image is too big (>2MB)", from_user)
         finally:
             f.close()
             FaceAnalysis.remove_garbage(file_name)

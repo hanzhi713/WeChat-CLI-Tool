@@ -9,6 +9,7 @@ class GuessNumber(Interactive):
     alias = "gn"
     title = "Number Guessing Game"
     description = "Guess a number which the computer randomly generates in a give range"
+    example = "Example: /gn 20 30"
 
     def __init__(self, from_user, args):
         Interactive.__init__(self, from_user, args)
