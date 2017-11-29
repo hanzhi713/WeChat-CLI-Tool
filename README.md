@@ -5,4 +5,10 @@
 
 You may need to get Tuling Chatbot API key and Face++ API key if you want to use Tuling.py and FaceAnalysis.py
 
-If you want to write your own command-line module, please refer to ModuleTemplate.py for details.
+After you've acquired these keys, create the "\_\_secrets__.py" file in modules folder and add your API keys
+```python
+facepp_keys = ["Key1", "Key2", "..."]
+facepp_secrets = ["Secret1", "Scret2", "..."]
+tuling_keys = ["Key1", "Key2", "..."]
+```
+If you want to write your own command-line module, please refer to __templates__.py for details.

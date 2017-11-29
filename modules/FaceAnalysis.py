@@ -5,7 +5,6 @@ import requests
 from json import JSONDecoder
 import multiprocessing, os, cv2
 import traceback
-import random
 
 
 class FaceAnalysis(Interactive):
@@ -15,9 +14,16 @@ class FaceAnalysis(Interactive):
     parameters = "[attr1] [attr2] [...]"
     attributes = ['gender', 'age', 'smiling', 'headpose', 'eyestatus', 'emotion', 'ethnicity',
                   'beauty', 'mouthstatus', 'eyegaze', 'skinstatus']
+    attributes_map = {
+        'gender': 'gender', 'age': 'age', 'smiling': 'smile', 'headpose': 'headpose',
+        'eyestatus': 'eyestatus', 'emotion': 'emotion', 'ethnicity': 'ethnicity',
+        'beauty': 'beauty', 'mouthstatus': 'mouthstatus', 'eyegaze': 'eyegaze', 'skinstatus': 'skinstatus'
+    }
     description = "Let the machine evaluate your face\nChoose one or more of the following attributes\n\t" + ", ".join(
         ['gender', 'age', 'smiling', 'headpose', 'eyestatus', 'emotion', 'ethnicity',
          'beauty', 'mouthstatus', 'eyegaze', 'skinstatus'])
+
+    num_of_reqs = 0
 
     def __init__(self, from_user, args):
         Interactive.__init__(self, from_user, args)
@@ -68,9 +74,10 @@ class FaceAnalysis(Interactive):
         itchat.auto_login(hotReload=True)
         http_url = "https://api-cn.faceplusplus.com/facepp/v3/detect"
 
-        rng_idx = random.randint(0, 2)
-        data = {"api_key": facepp_keys[rng_idx],
-                "api_secret": facepp_secrets[rng_idx],
+        num_of_keys = len(facepp_keys)
+        key_idx = FaceAnalysis.num_of_reqs % num_of_keys
+        data = {"api_key": facepp_keys[key_idx],
+                "api_secret": facepp_secrets[key_idx],
                 "return_landmark": "0",
                 "return_attributes": ",".join(self.attr)
                 }
@@ -99,7 +106,7 @@ class FaceAnalysis(Interactive):
                                     cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
                         if face.get('attributes', None) is not None:
                             msgs.append("Face {}: \n".format(i + 1) + str(
-                                "\n".join([attr + ": " + str(face['attributes'][attr]) for attr in self.attr])))
+                                "\n".join([attr + ": " + str(face['attributes'][FaceAnalysis.attributes_map[attr]]) for attr in self.attr])))
 
                     cv2.imwrite("result-{}".format(file_name), pic, (cv2.IMWRITE_PNG_COMPRESSION, 9))
                     itchat.send_image("result-{}".format(file_name), from_user)
