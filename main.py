@@ -121,7 +121,7 @@ if __name__ == "__main__":
                         session_processes[from_user] = [
                             multiprocessing.Process(target=mod.call, args=(from_user, cmd[1:],)), cmd[0]]
                         session_processes[from_user][0].start()
-                        itchat.send_msg("Type /q to quit", from_user)
+                        itchat.send_msg("Type /q to stop", from_user)
 
             else:
                 itchat.send_msg("\n".join(["Non-existent command {}".format("/" + cmd[0]),

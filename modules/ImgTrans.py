@@ -5,6 +5,8 @@ import time
 import itchat
 import os
 import multiprocessing
+import io
+from PIL import Image
 
 
 class ImgTrans(Interactive):
@@ -80,27 +82,31 @@ class ImgTrans(Interactive):
             self.finished = True
             itchat.send_msg('Command interrupted', msg['FromUserName'])
             self.send_separator(msg['FromUserName'])
-            ImgTrans.remove_garbage(self.file_name)
             return True
         else:
             return False
 
     def file_handler(self, file):
         if not self.finished:
-            file.download(file.fileName)
             itchat.send_msg("Image Received.\nProcessing...", file['FromUserName'])
-            self.file_name = file.fileName
+            file_b = io.BytesIO(file['Text']())
             self.proc = multiprocessing.Process(target=self.exec_task,
-                                                args=(file.fileName, file['FromUserName'], self.f,))
+                                                args=(file_b, file['FromUserName'], self.f,))
             self.proc.start()
         else:
             itchat.send_msg("Processing...\nPlease be patient...", file['FromUserName'])
 
-    def exec_task(self, file_name, from_user, f):
+    def exec_task(self, file_b, from_user, f):
         itchat.auto_login(hotReload=True)
         func = eval("lambda " + f)
         t = time.clock()
-        img = cv2.imread(file_name)
+
+        raw_img = np.asarray(Image.open(file_b))
+        img = np.zeros(raw_img.shape, raw_img.dtype)
+        img[:, :, 0] = raw_img[:, :, 2]
+        img[:, :, 1] = raw_img[:, :, 1]
+        img[:, :, 2] = raw_img[:, :, 0]
+
         height, width = img.shape[0:2]
         orgX, orgY = (width // 2, height // 2)
         c = self.kernel // 2
@@ -110,18 +116,19 @@ class ImgTrans(Interactive):
                 xy = ImgTrans.transform(x, y, orgX, orgY, func)
                 ImgTrans.avPixels(newImg, xy.real, xy.imag, img[y, x, :], self.kernel, c)
         imgArr = ImgTrans.toMatrix(newImg)
-        cv2.imwrite("result.png", imgArr)
 
+        cv2.imwrite("result.png", imgArr)
         itchat.send_image("result.png", from_user)
         itchat.send_msg("Time spent = {}s".format(round(time.clock() - t, 2)), from_user)
         self.send_separator(from_user)
         self.finished = True
-        ImgTrans.remove_garbage(file_name)
+
+        file_b.close()
+        ImgTrans.remove_garbage()
 
     @staticmethod
-    def remove_garbage(file_name):
+    def remove_garbage():
         try:
-            os.remove(file_name)
             os.remove("result.png")
         except:
             pass

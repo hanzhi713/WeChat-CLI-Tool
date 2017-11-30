@@ -2,9 +2,11 @@ from modules.__templates__ import Interactive
 from modules.__secrets__ import facepp_keys, facepp_secrets
 import itchat
 import requests
-from json import JSONDecoder
-import multiprocessing, os, cv2
+import multiprocessing
 import traceback
+import io, os, cv2, time
+import numpy as np
+from PIL import Image
 
 
 class FaceAnalysis(Interactive):
@@ -59,7 +61,6 @@ class FaceAnalysis(Interactive):
                     itchat.send_msg("Interrupted", from_user)
                     proc.terminate()
             for file_name in self.file_name:
-                FaceAnalysis.remove_garbage(file_name)
                 FaceAnalysis.remove_garbage("result-{}.png".format(file_name))
             self.finished = True
             self.send_separator(from_user)
@@ -71,14 +72,18 @@ class FaceAnalysis(Interactive):
     def file_handler(self, file):
         file_name = "{}-{}".format(len(self.file_name), file.fileName)
         self.file_name.append(file_name)
-        file.download(file_name)
+
+        file_b = io.BytesIO(file['Text']())
         itchat.send_msg("Processing image...", file['FromUserName'])
+
         FaceAnalysis.num_of_reqs += 1
-        self.proc.append(multiprocessing.Process(target=self.exec_task, args=(file_name, file['FromUserName'],)))
+        self.proc.append(multiprocessing.Process(target=self.exec_task, args=(file_name, file_b, file['FromUserName'],)))
         self.proc[len(self.proc) - 1].start()
 
-    def exec_task(self, file_name, from_user):
+    def exec_task(self, file_name, file_b, from_user):
         itchat.auto_login(hotReload=True)
+
+        t = time.clock()
         http_url = "https://api-cn.faceplusplus.com/facepp/v3/detect"
 
         num_of_keys = len(facepp_keys)
@@ -88,20 +93,25 @@ class FaceAnalysis(Interactive):
                 "return_landmark": "0",
                 "return_attributes": ",".join(self.attr)
                 }
-        f = open(file_name, "rb")
-        files = {"image_file": f}
+        files = {"image_file": file_b}
 
-        response = requests.post(http_url, data=data, files=files)
-        req_con = response.content.decode('utf-8')
-        req_dict = JSONDecoder().decode(req_con)
+        req_dict = requests.post(http_url, data=data, files=files).json()
         print(req_dict)
+
         try:
             if req_dict.get('faces', None) is None:
                 itchat.send_msg("Too many requests. Please try again later.", from_user)
             else:
                 if len(req_dict['faces']) > 0:
                     faces = req_dict['faces']
-                    pic = cv2.imread(file_name)
+
+                    t1 = time.clock()
+                    raw_pic = np.asarray(Image.open(file_b))
+                    pic = np.zeros(raw_pic.shape, raw_pic.dtype)
+                    pic[:, :, 0] = raw_pic[:, :, 2]
+                    pic[:, :, 1] = raw_pic[:, :, 1]
+                    pic[:, :, 2] = raw_pic[:, :, 0]
+
                     msgs = []
                     for i in range(len(faces)):
                         face = faces[i]
@@ -118,17 +128,20 @@ class FaceAnalysis(Interactive):
                                      in self.attr])))
 
                     cv2.imwrite("result-{}".format(file_name), pic, (cv2.IMWRITE_PNG_COMPRESSION, 9))
+
+                    print(time.clock() - t1)
+
                     itchat.send_image("result-{}".format(file_name), from_user)
                     for msg in msgs:
                         itchat.send_msg(msg, from_user)
+                    itchat.send_msg("Time taken: {}s".format(round(time.clock() - t, 2)), from_user)
                 else:
                     itchat.send_msg("No face detected!", from_user)
         except:
             print(traceback.format_exc())
             itchat.send_msg("Error! Maybe your image is too big (>2MB)", from_user)
         finally:
-            f.close()
-            FaceAnalysis.remove_garbage(file_name)
+            file_b.close()
             FaceAnalysis.remove_garbage("result-{}".format(file_name))
 
     @staticmethod
