@@ -11,7 +11,7 @@ facepp_keys = ["Key1", "Key2", "..."]
 facepp_secrets = ["Secret1", "Secret2", "..."]
 tuling_keys = ["Key1", "Key2", "..."]
 ```
-If you want to write your own command-line module, please refer to __templates__.py for details.
+If you [want](https://baidu.com) to write your own command-line module, please refer to __templates__.py for details.
 
 ### Demo
 

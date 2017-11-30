@@ -28,6 +28,7 @@ if __name__ == "__main__":
     session_objects = dict()
     session_processes = dict()
 
+
     @itchat.msg_register(TEXT)
     def msg_listener(msg):
         global session_objects, session_processes
@@ -71,9 +72,17 @@ if __name__ == "__main__":
                 del cmd[-1]
 
             if cmd[0] == 'help':
-                try:
-                    modules[cmd[1]].help(from_user)
-                except:
+                if len(cmd) > 1:
+                    try:
+                        if cmd[1][0] == '/':
+                            modules[cmd[1][1:]].help(from_user)
+                        else:
+                            modules[cmd[1]].help(from_user)
+                    except:
+                        itchat.send_msg(
+                            "Non-existent command name " + cmd[1] + "\nType /help to see all available commands",
+                            from_user)
+                else:
                     keys = list(modules.keys())
                     keys.sort()
                     for module_name in keys:
@@ -109,7 +118,8 @@ if __name__ == "__main__":
 
                     # fast_execution -> create a new process
                     else:
-                        session_processes[from_user] = [multiprocessing.Process(target=mod.call, args=(from_user, cmd[1:],)), cmd[0]]
+                        session_processes[from_user] = [
+                            multiprocessing.Process(target=mod.call, args=(from_user, cmd[1:],)), cmd[0]]
                         session_processes[from_user][0].start()
                         itchat.send_msg("Type /q to quit", from_user)
 

@@ -29,7 +29,7 @@ class ModuleBasics:
     title = "foobar"
 
     # Give an example of using your module
-    example = "/foo"
+    example = ""
 
     @classmethod
     def help(cls, from_user):
