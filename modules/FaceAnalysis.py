@@ -71,8 +71,7 @@ class FaceAnalysis(Interactive):
         itchat.send_msg("Processing image...", file['FromUserName'])
 
         FaceAnalysis.num_of_reqs += 1
-        self.proc.append(multiprocessing.Process(target=self.exec_task,
-                                    args=(file.fileName.split('.')[1], file_b, file['FromUserName'],)))
+        self.proc.append(multiprocessing.Process(target=self.exec_task,  args=(file.fileName.split('.')[1], file_b, file['FromUserName'],)))
         self.proc[len(self.proc) - 1].start()
 
     def exec_task(self, pic_type, file_b, from_user):
@@ -99,7 +98,6 @@ class FaceAnalysis(Interactive):
             else:
                 if len(req_dict['faces']) > 0:
                     faces = req_dict['faces']
-
                     t1 = time.clock()
                     pic = Image.open(file_b)
                     draw = ImageDraw.Draw(pic)
