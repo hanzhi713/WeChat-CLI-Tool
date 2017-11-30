@@ -3,7 +3,6 @@ import numpy as np
 import cv2
 import time
 import itchat
-import os
 import multiprocessing
 import io
 from PIL import Image
@@ -117,18 +116,11 @@ class ImgTrans(Interactive):
                 ImgTrans.avPixels(newImg, xy.real, xy.imag, img[y, x, :], self.kernel, c)
         imgArr = ImgTrans.toMatrix(newImg)
 
-        cv2.imwrite("result.png", imgArr)
-        itchat.send_image("result.png", from_user)
+        buf = io.BytesIO(cv2.imencode(".png", imgArr)[1])
+        itchat.send_image(None, from_user, None, buf)
+
         itchat.send_msg("Time spent = {}s".format(round(time.clock() - t, 2)), from_user)
         self.send_separator(from_user)
         self.finished = True
-
         file_b.close()
-        ImgTrans.remove_garbage()
-
-    @staticmethod
-    def remove_garbage():
-        try:
-            os.remove("result.png")
-        except:
-            pass
+        buf.close()

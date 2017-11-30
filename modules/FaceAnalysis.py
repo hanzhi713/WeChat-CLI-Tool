@@ -4,9 +4,8 @@ import itchat
 import requests
 import multiprocessing
 import traceback
-import io, os, cv2, time
-import numpy as np
-from PIL import Image
+import io, time
+from PIL import Image, ImageDraw, ImageFont
 
 
 class FaceAnalysis(Interactive):
@@ -60,8 +59,6 @@ class FaceAnalysis(Interactive):
                 if proc.is_alive():
                     itchat.send_msg("Interrupted", from_user)
                     proc.terminate()
-            for file_name in self.file_name:
-                FaceAnalysis.remove_garbage("result-{}.png".format(file_name))
             self.finished = True
             self.send_separator(from_user)
             return True
@@ -70,17 +67,16 @@ class FaceAnalysis(Interactive):
             return False
 
     def file_handler(self, file):
-        file_name = "{}-{}".format(len(self.file_name), file.fileName)
-        self.file_name.append(file_name)
-
         file_b = io.BytesIO(file['Text']())
         itchat.send_msg("Processing image...", file['FromUserName'])
 
         FaceAnalysis.num_of_reqs += 1
-        self.proc.append(multiprocessing.Process(target=self.exec_task, args=(file_name, file_b, file['FromUserName'],)))
+        self.proc.append(
+            multiprocessing.Process(target=self.exec_task,
+                                    args=(file.fileName.split('.')[1], file_b, file['FromUserName'],)))
         self.proc[len(self.proc) - 1].start()
 
-    def exec_task(self, file_name, file_b, from_user):
+    def exec_task(self, pic_type, file_b, from_user):
         itchat.auto_login(hotReload=True)
 
         t = time.clock()
@@ -106,35 +102,33 @@ class FaceAnalysis(Interactive):
                     faces = req_dict['faces']
 
                     t1 = time.clock()
-                    raw_pic = np.asarray(Image.open(file_b))
-                    pic = np.zeros(raw_pic.shape, raw_pic.dtype)
-                    pic[:, :, 0] = raw_pic[:, :, 2]
-                    pic[:, :, 1] = raw_pic[:, :, 1]
-                    pic[:, :, 2] = raw_pic[:, :, 0]
-
+                    pic = Image.open(file_b)
+                    draw = ImageDraw.Draw(pic)
                     msgs = []
+
                     for i in range(len(faces)):
                         face = faces[i]
                         print(i, face)
                         rect = face['face_rectangle']
-                        cv2.rectangle(pic, (rect['left'], rect['top']), (rect['left'] + rect['width'],
-                                                                         rect['top'] + rect['height']), (0, 255, 0), 5)
-                        cv2.putText(pic, "Face {}".format(i + 1), (rect['left'], rect['top'] + rect['height'] + 30),
-                                    cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
+                        FaceAnalysis.draw_rectangle(draw, (rect['left'], rect['top'], rect['left'] + rect['width'],
+                                                           rect['top'] + rect['height']), (0, 255, 0), 5)
+                        draw.text((rect['left'], rect['top'] + rect['height'] + 10), "Face {}".format(i + 1),
+                                  (255, 255, 255), ImageFont.truetype("modules/calibri.ttf", rect['height'] // 3))
                         if face.get('attributes', None) is not None:
-                            msgs.append("Face {}: \n".format(i + 1) + str(
-                                "\n".join(
-                                    [attr + ": " + str(face['attributes'][FaceAnalysis.attributes_map[attr]]) for attr
-                                     in self.attr])))
+                            msgs.append("Face {}: \n".format(i + 1) + str("\n".join(
+                                [attr + ": " + str(face['attributes'][FaceAnalysis.attributes_map[attr]])
+                                 for attr in self.attr])))
 
-                    cv2.imwrite("result-{}".format(file_name), pic, (cv2.IMWRITE_PNG_COMPRESSION, 9))
+                    buf = io.BytesIO()
+                    pic.save(buf, format=pic_type, compression_level=5, quality=75)
+                    buf.seek(0)
 
                     print(time.clock() - t1)
-
-                    itchat.send_image("result-{}".format(file_name), from_user)
+                    itchat.send_image(None, from_user, None, buf)
                     for msg in msgs:
                         itchat.send_msg(msg, from_user)
                     itchat.send_msg("Time taken: {}s".format(round(time.clock() - t, 2)), from_user)
+                    buf.close()
                 else:
                     itchat.send_msg("No face detected!", from_user)
         except:
@@ -142,11 +136,10 @@ class FaceAnalysis(Interactive):
             itchat.send_msg("Error! Maybe your image is too big (>2MB)", from_user)
         finally:
             file_b.close()
-            FaceAnalysis.remove_garbage("result-{}".format(file_name))
 
     @staticmethod
-    def remove_garbage(file_name):
-        try:
-            os.remove(file_name)
-        except:
-            pass
+    def draw_rectangle(draw, coor, color, width):
+        draw.rectangle((coor[0], coor[1], coor[0] + width, coor[3]), fill=color)
+        draw.rectangle((coor[0], coor[1], coor[2], coor[1] + width), fill=color)
+        draw.rectangle((coor[0], coor[3], coor[2] + width, coor[3] + width), fill=color)
+        draw.rectangle((coor[2], coor[1], coor[2] + width, coor[3] + width), fill=color)
