@@ -3,7 +3,7 @@ from itchat.content import *
 import os
 import traceback
 import re
-from modules.__config__ import multi_process
+from modules.__config__ import multi_process, terminal_QR
 if multi_process:
     from multiprocessing import Process
 else:
@@ -143,5 +143,5 @@ if __name__ == "__main__":
                 del session_objects[from_user]
 
 
-    itchat.auto_login(hotReload=True)
+    itchat.auto_login(hotReload=True, enableCmdQR=terminal_QR)
     itchat.run(True)

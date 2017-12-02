@@ -4,7 +4,7 @@ import time
 import itchat
 import io
 from PIL import Image
-from modules.__config__ import multi_process
+from modules.__config__ import multi_process, terminal_QR
 if multi_process:
     from multiprocessing import Process
 else:
@@ -92,7 +92,7 @@ class ImgTrans(Interactive):
 
     def exec_task(self, pic_type, file_b, from_user, f):
         if multi_process:
-            itchat.auto_login(hotReload=True)
+            itchat.auto_login(hotReload=True, enableCmdQR=terminal_QR)
         func = eval("lambda " + f)
         t = time.clock()
 

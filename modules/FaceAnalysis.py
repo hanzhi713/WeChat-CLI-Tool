@@ -5,13 +5,11 @@ import requests
 import traceback
 import io, time
 from PIL import Image, ImageDraw, ImageFont
-from modules.__config__ import multi_process
+from modules.__config__ import multi_process, terminal_QR
 if multi_process:
     from multiprocessing import Process
 else:
     from modules.__stoppable__ import Process
-
-
 
 
 class FaceAnalysis(Interactive):
@@ -82,7 +80,7 @@ class FaceAnalysis(Interactive):
 
     def exec_task(self, pic_type, file_b, from_user):
         if multi_process:
-            itchat.auto_login(hotReload=True)
+            itchat.auto_login(hotReload=True, enableCmdQR=terminal_QR)
 
         t = time.clock()
         http_url = "https://api-cn.faceplusplus.com/facepp/v3/detect"

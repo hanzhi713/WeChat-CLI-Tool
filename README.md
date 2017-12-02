@@ -12,11 +12,23 @@ tuling_keys = ["Key1", "Key2", "..."]
 ```
 If you want to write your own command-line module, please refer to "\_\_templates__.py" for details.
 
-If you want to get better parallel performance (i.e. when many users are requesting simultaneously), set multi_process=True in \_\_config__.py, in folder "modules".
-
+Some options in \_\_config__.py
+```python
+"""
+If you want to get better parallel performance (i.e. when many users are requesting simultaneously), 
+set multi_process=True in \_\_config__.py, in folder "modules".
+"""
+multi_process = False
+"""
+0: open the QR code using system's default image viewer
+1: show the QR code in terminal (use this one if your terminal's background color is black)
+-1: show the QR code in terminal (use this one if your terminal's background color is white)
+"""
+terminal_QR = 1
+```
 #### Running
 
-Execute main.py using python 3
+Execute __main.py__ using python 3
 
 #### Dependencies:
 ##### python 3 (required, tested on 3.5)
