@@ -3,6 +3,7 @@ import numpy as np
 from math import floor, sqrt
 import itchat
 from modules.__config__ import multi_process, terminal_QR
+import time
 
 numba_present = False
 try:
@@ -10,15 +11,19 @@ try:
 
     numba_present = True
 except ImportError:
-    import pyprimes
     pass
 
 primesieve_present = False
 try:
-    from primesieve.numpy import *
+    if numba_present:
+        from primesieve.numpy import *
+    else:
+        from primesieve import Iterator
 
     primesieve_present = True
 except ImportError:
+    import pyprimes
+
     pass
 
 
@@ -34,10 +39,10 @@ class Factorize(Static):
 
     if numba_present:
         @staticmethod
-        @numba.jit(numba.uint64[:](numba.uint64, numba.uint32[:]), nopython=True, cache=True)
+        @numba.jit(numba.uint32[:](numba.uint64, numba.uint32[:]), nopython=True, cache=True)
         def find_factors(n, prime_list):
             counter = 0
-            factors = np.zeros(10, np.uint64)
+            factors = np.zeros(5, np.uint32)
             for i in range(prime_list.size):
 
                 # find the power of this factor
@@ -48,49 +53,14 @@ class Factorize(Static):
 
                     # expand the array if these's insufficient space
                     if counter > factors.size - 1:
-                        temp = np.zeros(counter * 2, np.uint64)
+                        temp = np.zeros(counter * 2, np.uint32)
                         temp[0:counter] = factors
                         factors = temp
 
-                if n == 1:
+                if i ** 2 > n:
                     break
 
-            # append the number to the numpy array after it has been divided by all factors below sqrt(n)
-            # if there's exactly only one space left
-            if counter == factors.size:
-                temp = np.zeros(factors.size + 1, np.uint64)
-                temp[0:factors.size] = factors
-                factors = temp
-                factors[factors.size - 1] = n
-                return factors
-
-            # if there are extra spaces, delete them
-            else:
-                num_of_zeros = 0
-                for j in factors:
-                    if j != 0:
-                        num_of_zeros += 1
-                    else:
-                        break
-                temp = np.zeros(num_of_zeros + 1, np.uint64)
-                temp[0:num_of_zeros] = factors[0:num_of_zeros]
-                temp[num_of_zeros] = n
-                factors = temp
-                return factors
-    else:
-        @staticmethod
-        def find_factors(n, prime_list):
-            factors = []
-            for i in range(len(prime_list)):
-                while n % prime_list[i] == 0:
-                    n = n // prime_list[i]
-                    factors.append(prime_list[i])
-
-                if n == 1:
-                    break
-            if n != 1:
-                factors.append(n)
-            return np.array(factors, np.uint64)
+            return factors
 
     @staticmethod
     def call(from_user, n):
@@ -106,24 +76,37 @@ class Factorize(Static):
             raise Exception
 
         factors = [1]
+        t = time.clock()
         if primesieve_present:
-            # find all factors below sqrt(n)
-            # unexpected calculation error will happen if using np.uint64
-            prime_list = primes(floor(sqrt(n))).astype(np.uint32)
-            current_factors = Factorize.find_factors(n, prime_list)
+            remain = n
+            if numba_present:
+                slice_length = 1000000
+                for i in range(0, floor(sqrt(n)), slice_length):
+                    current_factors = [f for f in
+                                       Factorize.find_factors(remain, primes(i, i + slice_length).astype(np.uint32)) if
+                                       f != 0]
+                    for f in current_factors:
+                        remain //= f
+                    factors.extend(current_factors)
+                    if i ** 2 > remain:
+                        break
 
-            # record factors
-            factors.extend(current_factors[0:current_factors.size - 1])
+                if remain != 1:
+                    factors.append(remain)
 
-            # remain is either 1 or a prime factor > sqrt(n)
-            remain = current_factors[current_factors.size - 1]
-            del prime_list
+                if len(factors) == 2:
+                    return itchat.send_msg(str(n) + ' is prime!', from_user)
+            else:
+                it = Iterator()
+                p = it.next_prime()
+                while p ** 2 <= remain:
+                    while remain % p == 0:
+                        remain //= p
+                        factors.append(p)
+                    p = it.next_prime()
+                if remain != 1:
+                    factors.append(remain)
 
-            if remain != 1:
-                factors.append(remain)
-
-            if len(factors) == 2:
-                return itchat.send_msg(str(n) + ' is prime!', from_user)
         else:
             factors.extend(pyprimes.factors(n))
 
@@ -133,4 +116,5 @@ class Factorize(Static):
         if f == n:
             itchat.send_msg("Factors of {} are found!\n{}".format(n, factors), from_user)
         else:
-            itchat.send_msg("Unsuccessful factorization!", from_user)
+            itchat.send_msg("Unsuccessful factorization!\nComputing error!", from_user)
+        itchat.send_msg("Time spent: {}s".format(round(time.clock() - t, 2)), from_user)
