@@ -1,6 +1,6 @@
 from modules.__templates__ import Static
 import numpy as np
-from math import ceil, sqrt
+from math import floor, sqrt
 import itchat
 from modules.__config__ import multi_process, terminal_QR
 
@@ -34,7 +34,7 @@ class Factorize(Static):
 
     if numba_present:
         @staticmethod
-        @numba.jit(numba.uint64[:](numba.uint64, numba.uint64[:]), nopython=True, cache=True)
+        @numba.jit(numba.uint64[:](numba.uint64, numba.uint32[:]), nopython=True, cache=True)
         def find_factors(n, prime_list):
             counter = 0
             factors = np.zeros(10, np.uint64)
@@ -108,7 +108,8 @@ class Factorize(Static):
         factors = [1]
         if primesieve_present:
             # find all factors below sqrt(n)
-            prime_list = primes(ceil(sqrt(n))).astype(np.uint64)
+            # unexpected calculation error will happen if using np.uint64
+            prime_list = primes(floor(sqrt(n))).astype(np.uint32)
             current_factors = Factorize.find_factors(n, prime_list)
 
             # record factors
