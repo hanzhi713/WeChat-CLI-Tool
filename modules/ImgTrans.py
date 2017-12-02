@@ -2,9 +2,13 @@ from modules.__templates__ import Interactive
 import numpy as np
 import time
 import itchat
-import multiprocessing
 import io
 from PIL import Image
+from modules.__config__ import multi_process
+if multi_process:
+    from multiprocessing import Process
+else:
+    from modules.__stoppable__ import Process
 
 
 class ImgTrans(Interactive):
@@ -80,14 +84,15 @@ class ImgTrans(Interactive):
         if not self.finished:
             itchat.send_msg("Image Received.\nProcessing...", file['FromUserName'])
             file_b = io.BytesIO(file['Text']())
-            self.proc = multiprocessing.Process(target=self.exec_task,
+            self.proc = Process(target=self.exec_task,
                                                 args=(file.fileName.split('.')[1], file_b, file['FromUserName'], self.f,))
             self.proc.start()
         else:
             itchat.send_msg("Processing...\nPlease be patient...", file['FromUserName'])
 
     def exec_task(self, pic_type, file_b, from_user, f):
-        itchat.auto_login(hotReload=True)
+        if multi_process:
+            itchat.auto_login(hotReload=True)
         func = eval("lambda " + f)
         t = time.clock()
 

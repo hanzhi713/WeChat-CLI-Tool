@@ -2,10 +2,16 @@ from modules.__templates__ import Interactive
 from modules.__secrets__ import facepp_keys, facepp_secrets
 import itchat
 import requests
-import multiprocessing
 import traceback
 import io, time
 from PIL import Image, ImageDraw, ImageFont
+from modules.__config__ import multi_process
+if multi_process:
+    from multiprocessing import Process
+else:
+    from modules.__stoppable__ import Process
+
+
 
 
 class FaceAnalysis(Interactive):
@@ -71,11 +77,12 @@ class FaceAnalysis(Interactive):
         itchat.send_msg("Processing image...", file['FromUserName'])
 
         FaceAnalysis.num_of_reqs += 1
-        self.proc.append(multiprocessing.Process(target=self.exec_task,  args=(file.fileName.split('.')[1], file_b, file['FromUserName'],)))
+        self.proc.append(Process(target=self.exec_task,  args=(file.fileName.split('.')[1], file_b, file['FromUserName'],)))
         self.proc[len(self.proc) - 1].start()
 
     def exec_task(self, pic_type, file_b, from_user):
-        itchat.auto_login(hotReload=True)
+        if multi_process:
+            itchat.auto_login(hotReload=True)
 
         t = time.clock()
         http_url = "https://api-cn.faceplusplus.com/facepp/v3/detect"

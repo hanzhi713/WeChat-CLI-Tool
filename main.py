@@ -1,9 +1,13 @@
 import itchat
 from itchat.content import *
-from multiprocessing import Process
 import os
 import traceback
 import re
+from modules.__config__ import multi_process
+if multi_process:
+    from multiprocessing import Process
+else:
+    from modules.__stoppable__ import Process
 
 if __name__ == "__main__":
 

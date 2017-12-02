@@ -2,6 +2,7 @@ from modules.__templates__ import Static
 import numpy as np
 from math import ceil, sqrt
 import itchat
+from modules.__config__ import multi_process
 
 numba_present = False
 try:
@@ -93,6 +94,8 @@ class Factorize(Static):
 
     @staticmethod
     def call(from_user, n):
+        if multi_process:
+            itchat.auto_login(hotReload=True)
         try:
             n = int(n[0])
             if n > Factorize.maximum:

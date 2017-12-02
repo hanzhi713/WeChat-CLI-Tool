@@ -61,6 +61,7 @@ class Interactive(ModuleBasics):
 
     interactive = True
 
+
     def __init__(self, from_user, args):
         """
             the constructor which accepts a list parameters from the command line
