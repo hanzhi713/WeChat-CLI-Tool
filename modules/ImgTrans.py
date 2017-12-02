@@ -1,6 +1,5 @@
 from modules.__templates__ import Interactive
 import numpy as np
-import cv2
 import time
 import itchat
 import multiprocessing
@@ -26,19 +25,11 @@ class ImgTrans(Interactive):
         yRange = max(arrs, key=lambda x: x[1])[1] - min(arrs, key=lambda x: x[1])[1]
         shiftX = xRange // 2
         shiftY = yRange // 2
-        imgArr = np.zeros((yRange, xRange, 3), np.int16)
+        imgArr = np.zeros((yRange, xRange, 3), np.uint8)
         for x in range(xRange):
             for y in range(yRange):
-                imgArr[y, x, :] = np.array(newDict.get((x - shiftX, y - shiftY), [255, 255, 255]), np.int16)
+                imgArr[y, x, :] = np.array(newDict.get((x - shiftX, y - shiftY), [255, 255, 255]), np.uint8)
         return imgArr
-
-    @staticmethod
-    def bgrTorgb(img):
-        img_rgb = np.zeros(img.shape, img.dtype)
-        img_rgb[:, :, 0] = img[:, :, 2]
-        img_rgb[:, :, 1] = img[:, :, 1]
-        img_rgb[:, :, 2] = img[:, :, 0]
-        return img_rgb
 
     # interpolate the pixels with a matrix of size (size*size)
     @staticmethod
@@ -90,22 +81,17 @@ class ImgTrans(Interactive):
             itchat.send_msg("Image Received.\nProcessing...", file['FromUserName'])
             file_b = io.BytesIO(file['Text']())
             self.proc = multiprocessing.Process(target=self.exec_task,
-                                                args=(file_b, file['FromUserName'], self.f,))
+                                                args=(file.fileName.split('.')[1], file_b, file['FromUserName'], self.f,))
             self.proc.start()
         else:
             itchat.send_msg("Processing...\nPlease be patient...", file['FromUserName'])
 
-    def exec_task(self, file_b, from_user, f):
+    def exec_task(self, pic_type, file_b, from_user, f):
         itchat.auto_login(hotReload=True)
         func = eval("lambda " + f)
         t = time.clock()
 
-        raw_img = np.asarray(Image.open(file_b))
-        img = np.zeros(raw_img.shape, raw_img.dtype)
-        img[:, :, 0] = raw_img[:, :, 2]
-        img[:, :, 1] = raw_img[:, :, 1]
-        img[:, :, 2] = raw_img[:, :, 0]
-
+        img = np.asarray(Image.open(file_b))
         height, width = img.shape[0:2]
         orgX, orgY = (width // 2, height // 2)
         c = self.kernel // 2
@@ -116,9 +102,11 @@ class ImgTrans(Interactive):
                 ImgTrans.avPixels(newImg, xy.real, xy.imag, img[y, x, :], self.kernel, c)
         imgArr = ImgTrans.toMatrix(newImg)
 
-        buf = io.BytesIO(cv2.imencode(".png", imgArr)[1])
-        itchat.send_image(None, from_user, None, buf)
+        buf = io.BytesIO()
+        Image.fromarray(imgArr).save(buf, format=pic_type, quality=75, compression_leve=5)
+        buf.seek(0)
 
+        itchat.send_image(None, from_user, None, buf)
         itchat.send_msg("Time spent = {}s".format(round(time.clock() - t, 2)), from_user)
         self.send_separator(from_user)
         self.finished = True

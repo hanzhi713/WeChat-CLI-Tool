@@ -1,7 +1,7 @@
 import itchat
 from itchat.content import *
+from multiprocessing import Process
 import os
-import multiprocessing
 import traceback
 import re
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
                     # fast_execution -> create a new process
                     else:
                         session_processes[from_user] = [
-                            multiprocessing.Process(target=mod.call, args=(from_user, cmd[1:],)), cmd[0]]
+                            Process(target=mod.call, args=(from_user, cmd[1:],)), cmd[0]]
                         session_processes[from_user][0].start()
                         itchat.send_msg("Type /q to stop", from_user)
 

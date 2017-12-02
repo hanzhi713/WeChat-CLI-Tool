@@ -1,69 +1,98 @@
 from modules.__templates__ import Static
-import numba
-from primesieve.numpy import *
 import numpy as np
 from math import ceil, sqrt
 import itchat
 
+numba_present = False
+try:
+    import numba
+
+    numba_present = True
+except ImportError:
+    import pyprimes
+    pass
+
+primesieve_present = False
+try:
+    from primesieve.numpy import *
+
+    primesieve_present = True
+except ImportError:
+    pass
+
 
 class Factorize(Static):
     __author__ = "Hanzhi Zhou"
-    title = "Fast Factorization Algorithm"
+    title = "Factorization Algorithm by Trial Division"
     parameters = "[number]"
     description = "Find all prime factors of a positive integer less than 2^64"
     alias = "fc"
     example = "Example: /fc 123801238094213"
     fast_execution = False
-    maximum = 2**64 - 1
+    maximum = 2 ** 64 - 1
 
-    @staticmethod
-    @numba.jit(numba.uint64[:](numba.uint64, numba.uint64[:]), nopython=True, cache=True)
-    def find_factors(n, prime_list):
-        counter = 0
-        factors = np.zeros(10, np.uint64)
-        for i in range(prime_list.size):
+    if numba_present:
+        @staticmethod
+        @numba.jit(numba.uint64[:](numba.uint64, numba.uint64[:]), nopython=True, cache=True)
+        def find_factors(n, prime_list):
+            counter = 0
+            factors = np.zeros(10, np.uint64)
+            for i in range(prime_list.size):
 
-            # find the power of this factor
-            while n % prime_list[i] == 0:
-                n = n // prime_list[i]
-                factors[counter] = prime_list[i]
-                counter += 1
+                # find the power of this factor
+                while n % prime_list[i] == 0:
+                    n = n // prime_list[i]
+                    factors[counter] = prime_list[i]
+                    counter += 1
 
-                # expand the array if these's insufficient space
-                if counter > factors.size - 1:
-                    temp = np.zeros(counter * 2, np.uint64)
-                    temp[0:counter] = factors
-                    factors = temp
+                    # expand the array if these's insufficient space
+                    if counter > factors.size - 1:
+                        temp = np.zeros(counter * 2, np.uint64)
+                        temp[0:counter] = factors
+                        factors = temp
 
-            if n == 1:
-                break
-
-        # append the number to the numpy array after it has been divided by all factors below sqrt(n)
-        # if there's exactly only one space left
-        if counter == factors.size:
-            temp = np.zeros(factors.size + 1, np.uint64)
-            temp[0:factors.size] = factors
-            factors = temp
-            factors[factors.size] = n
-            return factors
-
-        # if there are extra spaces, delete them
-        else:
-            num_of_zeros = 0
-            for j in factors:
-                if j != 0:
-                    num_of_zeros += 1
-                else:
+                if n == 1:
                     break
-            temp = np.zeros(num_of_zeros + 1, np.uint64)
-            temp[0:num_of_zeros] = factors[0:num_of_zeros]
-            temp[num_of_zeros] = n
-            factors = temp
-            return factors
+
+            # append the number to the numpy array after it has been divided by all factors below sqrt(n)
+            # if there's exactly only one space left
+            if counter == factors.size:
+                temp = np.zeros(factors.size + 1, np.uint64)
+                temp[0:factors.size] = factors
+                factors = temp
+                factors[factors.size - 1] = n
+                return factors
+
+            # if there are extra spaces, delete them
+            else:
+                num_of_zeros = 0
+                for j in factors:
+                    if j != 0:
+                        num_of_zeros += 1
+                    else:
+                        break
+                temp = np.zeros(num_of_zeros + 1, np.uint64)
+                temp[0:num_of_zeros] = factors[0:num_of_zeros]
+                temp[num_of_zeros] = n
+                factors = temp
+                return factors
+    else:
+        @staticmethod
+        def find_factors(n, prime_list):
+            factors = []
+            for i in range(len(prime_list)):
+                while n % prime_list[i] == 0:
+                    n = n // prime_list[i]
+                    factors.append(prime_list[i])
+
+                if n == 1:
+                    break
+            if n != 1:
+                factors.append(n)
+            return np.array(factors, np.uint64)
 
     @staticmethod
     def call(from_user, n):
-        itchat.auto_login(hotReload=True)
         try:
             n = int(n[0])
             if n > Factorize.maximum:
@@ -74,29 +103,25 @@ class Factorize(Static):
             raise Exception
 
         factors = [1]
-        remain = n
-        while True:
-
+        if primesieve_present:
             # find all factors below sqrt(n)
-            prime_list = primes(ceil(sqrt(remain))).astype(np.uint64)
-            current_factors = Factorize.find_factors(remain, prime_list)
+            prime_list = primes(ceil(sqrt(n))).astype(np.uint64)
+            current_factors = Factorize.find_factors(n, prime_list)
 
             # record factors
             factors.extend(current_factors[0:current_factors.size - 1])
 
-            # get the unfactorized part
+            # remain is either 1 or a prime factor > sqrt(n)
             remain = current_factors[current_factors.size - 1]
             del prime_list
 
-            # break if the current factor (which is in fact the last factor) is a prime
-            if len(current_factors) == 1:
-                break
+            if remain != 1:
+                factors.append(remain)
 
-        if remain != 1:
-            factors.append(remain)
-
-        if len(factors) == 2:
-            return itchat.send_msg(str(n) + ' is prime!', from_user)
+            if len(factors) == 2:
+                return itchat.send_msg(str(n) + ' is prime!', from_user)
+        else:
+            factors.extend(pyprimes.factors(n))
 
         factors = [str(a) for a in factors]
         factors = " * ".join(factors)
