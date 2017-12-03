@@ -76,14 +76,14 @@ class Factorize(Static):
             raise Exception
 
         if n < 0:
-            n = -n
+            remain = -n
             factors = [-1]
         else:
+            remain = n
             factors = [1]
 
         t = time.clock()
         if primesieve_present:
-            remain = n
             if numba_present:
                 slice_length = 1000000
                 for i in range(0, floor(sqrt(n)), slice_length):
@@ -110,7 +110,7 @@ class Factorize(Static):
                 if remain != 1:
                     factors.append(remain)
         else:
-            factors.extend(pyprimes.factors(n))
+            factors.extend(pyprimes.factors(remain))
 
         if len(factors) == 2:
             itchat.send_msg(str(n) + ' is prime!', from_user)
