@@ -75,7 +75,7 @@ class RPN(Static):
                     continue
         st = ''
         for i in stack:
-            st += str(i)
+            st += str(i) + ' '
 
         # remove the outermost parentheses
         if st.startswith("(") and st.endswith(")"):

@@ -47,22 +47,10 @@ class Calc24(Static):
             else:
                 stack.append(token)
 
-        st = ''
-        for i in stack:
-            st += str(i)
-
-        # remove the outermost parentheses (if abundant)
+        st = stack[0]
+        # remove the outermost parentheses
         if st.startswith("(") and st.endswith(")"):
-            t = 0
-            for i in st[1:len(st) - 1]:
-                if i == "(":
-                    t += 1
-                elif i == ")":
-                    t -= 1
-                if t < 0:
-                    break
-            if t == 0:
-                st = st[1:len(st) - 1]
+            st = st[1:len(st) - 1]
         return st
 
     @staticmethod
