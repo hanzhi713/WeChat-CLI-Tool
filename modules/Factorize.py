@@ -72,10 +72,15 @@ class Factorize(Static):
                 itchat.send_msg("Number must be no larger than 2^64 - 1 ({})".format(Factorize.maximum), from_user)
                 raise Exception
         except:
-            itchat.send_msg("Argument Error\nOne positive integer parameter is required", from_user)
+            itchat.send_msg("Argument Error\nOne integer parameter is required", from_user)
             raise Exception
 
-        factors = [1]
+        if n < 0:
+            n = -n
+            factors = [-1]
+        else:
+            factors = [1]
+
         t = time.clock()
         if primesieve_present:
             remain = n
@@ -110,7 +115,7 @@ class Factorize(Static):
         if len(factors) == 2:
             itchat.send_msg(str(n) + ' is prime!', from_user)
             return itchat.send_msg("Time spent: {}s".format(round(time.clock() - t, 2)), from_user)
-            
+
         factors = [str(a) for a in factors]
         factors = " * ".join(factors)
         f = eval(factors)
