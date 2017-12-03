@@ -1,6 +1,6 @@
 """
 If you want to get better parallel performance (i.e. when many users are requesting simultaneously), 
-set multi_process=True in \_\_config__.py, in folder "modules".
+set multi_process=True in __config__.py, in folder "modules".
 """
 multi_process = False
 """

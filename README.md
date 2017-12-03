@@ -1,6 +1,6 @@
 ## WeChat Command-Line Tool
 
-#### Configuration
+### Configuration
 
 You need to get Tuling Chatbot API key and Face++ API key if you want to use Tuling.py and FaceAnalysis.py
 
@@ -16,7 +16,7 @@ Some options in \_\_config__.py
 ```python
 """
 If you want to get better parallel performance (i.e. when many users are requesting simultaneously), 
-set multi_process=True in \_\_config__.py, in folder "modules".
+set multi_process=True in __config__.py, in folder "modules".
 """
 multi_process = False
 """
@@ -26,11 +26,11 @@ multi_process = False
 """
 terminal_QR = 1
 ```
-#### Running
+### Running
 
 Execute __main.py__ using python 3
 
-#### Dependencies:
+### Dependencies:
 ##### python 3 (required, tested on 3.5)
 ##### itchat (required)
 ##### numpy (required)
