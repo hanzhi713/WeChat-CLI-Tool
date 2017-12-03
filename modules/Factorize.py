@@ -94,9 +94,6 @@ class Factorize(Static):
                 if remain != 1:
                     factors.append(remain)
 
-                if len(factors) == 2:
-                    itchat.send_msg(str(n) + ' is prime!', from_user)
-                    return itchat.send_msg("Time spent: {}s".format(round(time.clock() - t, 2)), from_user)
             else:
                 it = Iterator()
                 p = it.next_prime()
@@ -111,8 +108,9 @@ class Factorize(Static):
             factors.extend(pyprimes.factors(n))
 
         if len(factors) == 2:
-            return itchat.send_msg(str(n) + ' is prime!', from_user)
-
+            itchat.send_msg(str(n) + ' is prime!', from_user)
+            return itchat.send_msg("Time spent: {}s".format(round(time.clock() - t, 2)), from_user)
+            
         factors = [str(a) for a in factors]
         factors = " * ".join(factors)
         f = eval(factors)
