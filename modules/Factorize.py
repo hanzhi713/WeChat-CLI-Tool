@@ -106,9 +106,11 @@ class Factorize(Static):
                     p = it.next_prime()
                 if remain != 1:
                     factors.append(remain)
-
         else:
             factors.extend(pyprimes.factors(n))
+
+        if len(factors) == 2:
+            return itchat.send_msg(str(n) + ' is prime!', from_user)
 
         factors = [str(a) for a in factors]
         factors = " * ".join(factors)
