@@ -1,4 +1,4 @@
-from modules.__templates__ import Static
+from .__templates__ import Static
 import itchat
 import itertools
 
@@ -53,21 +53,24 @@ class Calc24(Static):
             st = st[1:len(st) - 1]
         return st
 
-    @staticmethod
-    def call(from_user, args):
+    @classmethod
+    def parse_args(cls, from_user, args):
+        assert len(args) >= 4, "4 positive integer parameters are required!"
+        assert args[0].isdigit() and args[1].isdigit() and args[2].isdigit() and args[
+            3].isdigit(), "4 positive integer parameters are required!"
+        return args[0:4]
+
+    @classmethod
+    def call(cls, from_user, args):
         operands = ['+', '-', '*', '/']
-        try:
-            nums = str(int(args[0])), str(int(args[1])), str(int(args[2])), str(int(args[3]))
-        except:
-            itchat.send_msg("Illegal Arguments\n4 integer parameters are required", from_user)
-            raise Exception
+        nums = args
         results = []
         for per in list(itertools.permutations(nums, 4)):
             print(per)
             for op in list(itertools.permutations(operands, 3)):
                 expr = [per[0], per[1], op[0], per[2], op[1], per[3], op[2]]
-                if Calc24.eval_postfix(expr) == 24:
-                    results.append(Calc24.post_to_in(expr))
+                if cls.eval_postfix(expr) == 24:
+                    results.append(cls.post_to_in(expr))
         if len(results) == 0:
             itchat.send_msg("No solution!", from_user)
         else:

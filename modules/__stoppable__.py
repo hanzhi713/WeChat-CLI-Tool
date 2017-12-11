@@ -4,7 +4,7 @@ from threading import Thread
 class Process(Thread):
 
     def __init__(self, target=None, args=()):
-        super(Process, self).__init__()
+        super(self.__class__, self).__init__()
         self.target = target
         self.args = args
         self.stopped = False

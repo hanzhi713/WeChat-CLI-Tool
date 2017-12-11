@@ -1,6 +1,7 @@
 """
 If you want to get better parallel performance (i.e. when many users are requesting simultaneously), 
-set multi_process=True in __config__.py, in folder "modules".
+set multi_process=True here
+I found some problems associated with itchat hotReload on ARM64 platform, and therefore I designed an alternative solution -- using threading to avoid hotReload.
 """
 multi_process = False
 """
@@ -8,4 +9,4 @@ multi_process = False
 1: show the QR code in terminal (use this one if your terminal's background color is black)
 -1: show the QR code in terminal (use this one if your terminal's background color is white)
 """
-terminal_QR = 1
+terminal_QR = 0

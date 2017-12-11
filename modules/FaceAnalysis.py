@@ -1,15 +1,16 @@
-from modules.__templates__ import Interactive
-from modules.__secrets__ import facepp_keys, facepp_secrets
+from .__templates__ import Interactive
+from .__secrets__ import facepp_keys, facepp_secrets
 import itchat
 import requests
 import traceback
 import io, time
 from PIL import Image, ImageDraw, ImageFont
-from modules.__config__ import multi_process, terminal_QR
+from .__config__ import multi_process, terminal_QR
+
 if multi_process:
     from multiprocessing import Process
 else:
-    from modules.__stoppable__ import Process
+    from .__stoppable__ import Process
 
 
 class FaceAnalysis(Interactive):
@@ -19,6 +20,7 @@ class FaceAnalysis(Interactive):
     parameters = "[attr1] [attr2] [...]"
     attributes = ['gender', 'age', 'smiling', 'headpose', 'eyestatus', 'emotion', 'ethnicity',
                   'beauty', 'mouthstatus', 'eyegaze', 'skinstatus']
+
     attributes_map = {
         'gender': 'gender', 'age': 'age', 'smiling': 'smile', 'headpose': 'headpose',
         'eyestatus': 'eyestatus', 'emotion': 'emotion', 'ethnicity': 'ethnicity',
@@ -30,31 +32,23 @@ class FaceAnalysis(Interactive):
          'skinstatus']) + "\nNote that your request might not succeed if the image you sent contains more than 5 faces"
 
     example = "Example: /face age beauty"
-
     num_of_reqs = 0
 
-    def __init__(self, from_user, args):
-        Interactive.__init__(self, from_user, args)
-        try:
-            if len(args) == 0:
-                itchat.send_msg("You must enter one attribute!", from_user)
-                raise AssertionError
-            for attr in args:
-                if attr not in FaceAnalysis.attributes:
-                    itchat.send_msg("Non-existent attribute {}\nAllowed attributes are {}".format(attr, ", ".join(
-                        FaceAnalysis.attributes)), from_user)
-                    raise AssertionError
-            self.attr = args.copy()
-            self.send_separator(from_user)
-            self.file_name = []
-            self.proc = []
-            itchat.send_msg("Please send an image with face(s) in it. You can send multiple images.", from_user)
+    @classmethod
+    def parse_args(cls, from_user, args):
+        assert len(args) > 0, "You must enter at least one attribute!"
+        for attr in args:
+            assert attr in cls.attributes, "Non-existent attribute {}\nAllowed attributes are {}" \
+                .format(attr, ", ".join(cls.attributes))
+        return args.copy()
 
-        except AssertionError:
-            raise Exception
-        except:
-            itchat.send_msg("Illegal Argument!", from_user)
-            raise Exception
+    def __init__(self, from_user, args):
+        super(self.__class__, self).__init__(from_user, args)
+        self.attr = args
+        self.send_separator(from_user)
+        self.file_name = []
+        self.proc = []
+        itchat.send_msg("Please send an image with face(s) in it. You can send multiple images.", from_user)
 
     def msg_handler(self, msg):
         from_user = msg['FromUserName']
@@ -75,7 +69,8 @@ class FaceAnalysis(Interactive):
         itchat.send_msg("Processing image...", file['FromUserName'])
 
         FaceAnalysis.num_of_reqs += 1
-        self.proc.append(Process(target=self.exec_task,  args=(file.fileName.split('.')[1], file_b, file['FromUserName'],)))
+        self.proc.append(
+            Process(target=self.exec_task, args=(file.fileName.split('.')[1], file_b, file['FromUserName'],)))
         self.proc[len(self.proc) - 1].start()
 
     def exec_task(self, pic_type, file_b, from_user):
@@ -103,7 +98,6 @@ class FaceAnalysis(Interactive):
             else:
                 if len(req_dict['faces']) > 0:
                     faces = req_dict['faces']
-                    t1 = time.clock()
                     pic = Image.open(file_b)
                     draw = ImageDraw.Draw(pic)
                     msgs = []
@@ -125,7 +119,6 @@ class FaceAnalysis(Interactive):
                     pic.save(buf, format=pic_type, compression_level=5, quality=75)
                     buf.seek(0)
 
-                    print(time.clock() - t1)
                     itchat.send_image(None, from_user, None, buf)
                     for msg in msgs:
                         itchat.send_msg(msg, from_user)

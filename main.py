@@ -42,8 +42,8 @@ if __name__ == "__main__":
         from_user = msg['FromUserName']
 
         # get the user session
-        current_process_info = session_processes.get(from_user, None)
-        current_object = session_objects.get(from_user, None)
+        current_process_info = session_processes.get(from_user)
+        current_object = session_objects.get(from_user)
 
         if current_process_info is not None:
             if current_process_info[0].is_alive():
@@ -77,12 +77,13 @@ if __name__ == "__main__":
 
             if cmd[0] == 'help':
                 if len(cmd) > 1:
-                    try:
-                        if cmd[1][0] == '/':
-                            modules[cmd[1][1:]].help(from_user)
-                        else:
-                            modules[cmd[1]].help(from_user)
-                    except:
+                    if cmd[1][0] == '/':
+                        mod = modules.get(cmd[1][1:])
+                    else:
+                        mod = modules.get(cmd[1])
+                    if mod is not None:
+                        mod.help(from_user)
+                    else:
                         itchat.send_msg(
                             "Non-existent command name " + cmd[1] + "\nType /help to see all available commands",
                             from_user)
@@ -93,7 +94,6 @@ if __name__ == "__main__":
                         modules[module_name].help_brief(from_user)
 
             elif cmd[0] in modules.keys():
-
                 if len(session_objects.keys()) + len(session_processes.keys()) > 10:
                     itchat.send_msg('Too many people sending commands. Please try again later.', from_user)
                     return
@@ -103,11 +103,11 @@ if __name__ == "__main__":
                 # interaction required -> create a new object to handle message
                 if mod.interactive:
                     try:
-                        session_objects[from_user] = mod(from_user, cmd[1:])
+                        session_objects[from_user] = mod(from_user, mod.parse_args(from_user, cmd[1:]))
                         itchat.send_msg("Type /q to quit", from_user)
-                    except:
+                    except Exception as e:
                         traceback.print_exc()
-                        # itchat.send_msg("Error when executing {}".format("/" + cmd[0]))
+                        itchat.send_msg(str(e), from_user)
 
                 # no interaction -> static method call
                 else:
@@ -115,17 +115,21 @@ if __name__ == "__main__":
                     # fast_execution -> call in the main thread
                     if mod.fast_execution:
                         try:
-                            mod.call(from_user, cmd[1:])
-                        except:
+                            mod.call(from_user, mod.parse_args(from_user, cmd[1:]))
+                        except Exception as e:
                             traceback.print_exc()
-                            # itchat.send_msg("Error when executing {}".format("/" + cmd[0]))
+                            itchat.send_msg(str(e), from_user)
 
                     # fast_execution -> create a new process
                     else:
-                        session_processes[from_user] = [
-                            Process(target=mod.call, args=(from_user, cmd[1:],)), cmd[0]]
-                        session_processes[from_user][0].start()
-                        itchat.send_msg("Type /q to stop", from_user)
+                        try:
+                            session_processes[from_user] = [
+                                Process(target=mod.call, args=(from_user, mod.parse_args(from_user, cmd[1:]),)), cmd[0]]
+                            session_processes[from_user][0].start()
+                            itchat.send_msg("Type /q to stop", from_user)
+                        except Exception as e:
+                            traceback.print_exc()
+                            itchat.send_msg(str(e), from_user)
 
             else:
                 itchat.send_msg("\n".join(["Non-existent command {}".format("/" + cmd[0]),
@@ -138,7 +142,7 @@ if __name__ == "__main__":
     def file_listener(file):
         global session_objects
         from_user = file['FromUserName']
-        if session_objects.get(from_user, None) is not None:
+        if session_objects.get(from_user) is not None:
             if session_objects[from_user].file_handler(file):
                 del session_objects[from_user]
 

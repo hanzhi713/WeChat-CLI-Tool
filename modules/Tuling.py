@@ -1,5 +1,5 @@
-from modules.__templates__ import Interactive
-from modules.__secrets__ import tuling_keys
+from .__templates__ import Interactive
+from .__secrets__ import tuling_keys
 import itchat
 import requests
 
@@ -11,7 +11,7 @@ class Tuling(Interactive):
     num_of_reqs = 0
 
     def __init__(self, from_user, args):
-        Interactive.__init__(self, from_user, args)
+        super(self.__class__, self).__init__(from_user, args)
         self.user = from_user
         self.send_separator(self.user)
 

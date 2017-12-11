@@ -1,8 +1,8 @@
-from modules.__templates__ import Static
+from .__templates__ import Static
 import numpy as np
 from math import floor, sqrt
 import itchat
-from modules.__config__ import multi_process, terminal_QR
+from .__config__ import multi_process, terminal_QR
 import time
 
 numba_present = False
@@ -62,19 +62,22 @@ class Factorize(Static):
 
             return factors
 
-    @staticmethod
-    def call(from_user, n):
+    @classmethod
+    def parse_args(cls, from_user, args):
+        assert len(args) > 0, "You must provide a number!"
+        if args[0][0] == '-':
+            assert args[0][1:].isdigit(), "You must provide an integer!"
+        else:
+            assert args[0].isdigit(), "You must provide an integer!"
+        n = int(args[0])
+        assert n <= cls.maximum, "Number must be no larger than 2^64 - 1 ({})".format(cls.maximum)
+        return n
+
+    @classmethod
+    def call(cls, from_user, args):
         if multi_process:
             itchat.auto_login(hotReload=True, enableCmdQR=terminal_QR)
-        try:
-            n = int(n[0])
-            if n > Factorize.maximum:
-                itchat.send_msg("Number must be no larger than 2^64 - 1 ({})".format(Factorize.maximum), from_user)
-                raise Exception
-        except:
-            itchat.send_msg("Argument Error\nOne integer parameter is required", from_user)
-            raise Exception
-
+        n = args
         if n < 0:
             remain = -n
             factors = [-1]
@@ -88,7 +91,7 @@ class Factorize(Static):
                 slice_length = 1000000
                 for i in range(0, floor(sqrt(n)), slice_length):
                     current_factors = [f for f in
-                                       Factorize.find_factors(remain, primes(i, i + slice_length).astype(np.uint32)) if
+                                       cls.find_factors(remain, primes(i, i + slice_length).astype(np.uint32)) if
                                        f != 0]
                     for f in current_factors:
                         remain //= f

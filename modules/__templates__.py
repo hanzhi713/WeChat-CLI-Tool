@@ -34,7 +34,7 @@ class ModuleBasics:
     @classmethod
     def help(cls, from_user):
         """
-            print the instructions of this command when /help <alias> is invoked
+            print the instructions of this command when /help [alias] is invoked
             generally there's no need to override this method
         """
         ins = ["/{} {}".format(cls.alias, cls.parameters),
@@ -61,13 +61,15 @@ class Interactive(ModuleBasics):
 
     interactive = True
 
+    @classmethod
+    def parse_args(cls, from_user, args):
+        return args
 
     def __init__(self, from_user, args):
         """
             the constructor which accepts a list parameters from the command line
             e.g. when user called /foo 1 2 3, args = ['1', '2', '3']
         """
-
         # The finish flag for this session, which must set to True when session is finished
         self.finished = False
 
@@ -117,8 +119,12 @@ class Static(ModuleBasics):
     """
     fast_execution = False
 
-    @staticmethod
-    def call(from_user, args):
+    @classmethod
+    def parse_args(cls, from_user, args):
+        return args
+
+    @classmethod
+    def call(cls, from_user, args):
         """
             This method accepts the from_user, which is the WeChat user ID, and args,
             the list of arguments passed from the command line.

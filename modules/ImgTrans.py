@@ -1,14 +1,14 @@
-from modules.__templates__ import Interactive
+from .__templates__ import Interactive
+from .__config__ import multi_process, terminal_QR
 import numpy as np
 import time
 import itchat
 import io
 from PIL import Image
-from modules.__config__ import multi_process, terminal_QR
 if multi_process:
     from multiprocessing import Process
 else:
-    from modules.__stoppable__ import Process
+    from .__stoppable__ import Process
 
 
 class ImgTrans(Interactive):
@@ -51,42 +51,40 @@ class ImgTrans(Interactive):
         c = complex(x - orgX, y - orgY)
         return f(c)
 
-    def __init__(self, from_user, args):
-        Interactive.__init__(self, from_user, args)
-        try:
-            f = eval("lambda " + args[0])
-            if type(f(complex(0, 0))) != complex:
-                itchat.send_msg("Illegal Complex Function!", from_user)
-                raise AssertionError
-            self.f = args[0]
-            self.kernel = int(args[1])
-            self.proc = None
-        except AssertionError:
-            raise Exception
-        except:
-            itchat.send_msg("Illegal Arguments!", from_user)
-            raise Exception
+    @classmethod
+    def parse_args(cls, from_user, args):
+        assert len(args) >= 2, "Two parameters are required: [function] and [kernel size]"
+        f = eval("lambda " + args[0])
+        assert type(f(complex(0, 0))) == complex, "Illegal Complex Function!"
+        assert args[1].isdigit(), "A positive integer is required for specifying the kernel size"
+        return args[0], int(args[1])
 
+    def __init__(self, from_user, args):
+        super(self.__class__, self).__init__(from_user, args)
+        self.f, self.kernel = args
+        self.process = None
         self.send_separator(from_user)
         itchat.send_msg("Please send an image", from_user)
 
     def msg_handler(self, msg):
         if msg['Text'] == '/q':
-            self.proc.terminate()
+            if self.process is not None:
+                self.process.terminate()
             self.finished = True
             itchat.send_msg('Command interrupted', msg['FromUserName'])
             self.send_separator(msg['FromUserName'])
             return True
         else:
+            itchat.send_msg("If you want to switch command, please type /q to quit current session first", msg['FromUserName'])
             return False
 
     def file_handler(self, file):
         if not self.finished:
             itchat.send_msg("Image Received.\nProcessing...", file['FromUserName'])
             file_b = io.BytesIO(file['Text']())
-            self.proc = Process(target=self.exec_task,
-                                                args=(file.fileName.split('.')[1], file_b, file['FromUserName'], self.f,))
-            self.proc.start()
+            self.process = Process(target=self.exec_task,
+                                   args=(file.fileName.split('.')[1], file_b, file['FromUserName'], self.f,))
+            self.process.start()
         else:
             itchat.send_msg("Processing...\nPlease be patient...", file['FromUserName'])
 

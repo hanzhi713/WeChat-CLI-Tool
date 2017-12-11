@@ -1,4 +1,4 @@
-from modules.__templates__ import Interactive
+from .__templates__ import Interactive
 import itchat
 import random
 
@@ -11,23 +11,21 @@ class GuessNumber(Interactive):
     description = "Guess a number which the computer randomly generates in a give range"
     example = "Example: /gn 20 30"
 
-    def __init__(self, from_user, args):
-        Interactive.__init__(self, from_user, args)
-        try:
-            lower = int(args[0])
-            upper = int(args[1])
-            if upper <= lower:
-                itchat.send_msg("Upper bound must be greater than the lower bound!".format(lower, upper), from_user)
-                raise AssertionError
-            self.number = random.randint(lower, upper + 1)
-        except AssertionError:
-            raise Exception
-        except:
-            itchat.send_msg("Illegal Arguments!\nTwo integer parameters are required: [lower] and [upper]", from_user)
-            raise Exception
+    @classmethod
+    def parse_args(cls, from_user, args):
+        assert len(args) >= 2, "Two positive integer parameters are required: [lower] and [upper]"
+        assert args[0].isdigit(), "Two positive integer parameters are required: [lower] and [upper]"
+        assert args[1].isdigit(), "Two positive integer parameters are required: [lower] and [upper]"
+        lower = int(args[0])
+        upper = int(args[1])
+        assert lower < upper, "Upper bound must be greater than the lower bound!"
+        return lower, upper
 
+    def __init__(self, from_user, args):
+        super(self.__class__, self).__init__(from_user, args)
+        lower, upper = args
+        self.number = random.randint(lower, upper)
         self.trials = 0
-        self.finished = False
         self.send_separator(from_user)
         itchat.send_msg("Guessing between {} and {}".format(lower, upper), from_user)
 
