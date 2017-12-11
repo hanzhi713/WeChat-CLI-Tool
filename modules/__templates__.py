@@ -63,6 +63,10 @@ class Interactive(ModuleBasics):
 
     @classmethod
     def parse_args(cls, from_user, args):
+        """
+            You should validate and process arguments passed from the command line here.
+            The return value will be the parameter for the third argument of '__init__' 
+        """
         return args
 
     def __init__(self, from_user, args):
@@ -121,6 +125,10 @@ class Static(ModuleBasics):
 
     @classmethod
     def parse_args(cls, from_user, args):
+        """
+            You should validate and process arguments passed from the command line here.
+            The return value will be the parameter for the third argument of 'call' 
+        """
         return args
 
     @classmethod
