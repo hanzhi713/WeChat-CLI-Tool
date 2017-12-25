@@ -1,6 +1,6 @@
-## WeChat Command-Line Tool
+# WeChat Command-Line Tool
 
-### Configuration
+## Configuration
 
 You need to get Tuling Chatbot API key and Face++ API key if you want to use Tuling.py and FaceAnalysis.py
 
@@ -16,7 +16,9 @@ Some options in \_\_config__.py
 ```python
 """
 If you want to get better parallel performance (i.e. when many users are requesting simultaneously), 
-set multi_process=True in __config__.py, in folder "modules".
+set this to True
+I found some problems associated with itchat hotReload on ARM64 platform, and therefore I designed an alternative solution
+ -- using threading rather than multiprocessing (set this to False) to avoid hotReload.
 """
 multi_process = False
 """
@@ -26,21 +28,21 @@ multi_process = False
 """
 terminal_QR = 1
 ```
-### Running
+## Running
 
 Execute __main.py__ using python 3
 
-### Dependencies:
-##### python 3 (required, tested on 3.5)
-##### itchat (required)
-##### numpy (required)
-##### Pillow (required)
-##### numba (optional)
-##### primesieve or pyprimes (recommend the former)
+## Dependencies:
+#### python 3 (required, tested on 3.5)
+#### itchat (required)
+#### numpy (required)
+#### Pillow (required)
+#### numba (optional)
+#### primesieve or pyprimes (recommend the former)
 
 Opitonal modules are recommended to be installed because they can significantly the improve performance.
 
-### Demo
+## Demo
 
 ![demo-pic](demo/1.jpg)
 ![demo-pic](demo/2.jpg)

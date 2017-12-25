@@ -1,6 +1,6 @@
 """
 If you want to get better parallel performance (i.e. when many users are requesting simultaneously), 
-set multi_process=True here
+set this to True
 I found some problems associated with itchat hotReload on ARM64 platform, and therefore I designed an alternative solution -- using threading to avoid hotReload.
 """
 multi_process = False
