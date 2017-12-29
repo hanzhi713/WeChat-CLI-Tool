@@ -33,12 +33,17 @@ terminal_QR = 1
 Execute __main.py__ using python 3
 
 ## Dependencies:
-#### python 3 (required, tested on 3.5)
-#### itchat (required)
-#### numpy (required)
-#### Pillow (required)
-#### numba (optional)
-#### primesieve or pyprimes (recommend the former)
+Python 3 (required, tested on 3.5 and 3.6)
+
+Itchat (required)
+
+NumPy (required)
+
+Pillow (required)
+
+Numba (optional)
+
+Primesieve or Pyprimes (recommend the former)
 
 Opitonal modules are recommended to be installed because they can significantly the improve performance.
 
