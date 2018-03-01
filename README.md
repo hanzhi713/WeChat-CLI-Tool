@@ -33,6 +33,7 @@ terminal_QR = 1
 Execute __main.py__ using python 3
 
 ## Dependencies:
+
 Python 3 (required, tested on 3.5 and 3.6)
 
 Itchat (required)
@@ -52,3 +53,6 @@ Opitonal modules are recommended to be installed because they can significantly 
 ![demo-pic](demo/1.jpg)
 ![demo-pic](demo/2.jpg)
 
+## Credits
+
+Initial ideas credit to @TianziFC. He has an implementation distinct from mine.
