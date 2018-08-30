@@ -4,6 +4,7 @@ import os
 import traceback
 import re
 from modules.__config__ import multi_process, terminal_QR
+
 if multi_process:
     from multiprocessing import Process
 else:
@@ -70,69 +71,79 @@ if __name__ == "__main__":
         # if this is really a command
         if cmd[:1] == "/":
 
-            # parse the command and arguments
-            cmd = re.split(" +", cmd[1:])
-            if cmd[-1] == "":
-                del cmd[-1]
+            if len(cmd) > 1:
 
-            if cmd[0] == 'help':
-                if len(cmd) > 1:
-                    if cmd[1][0] == '/':
-                        mod = modules.get(cmd[1][1:])
+                # parse the command and arguments
+                cmd = re.split(" +", cmd[1:])
+                if cmd[-1] == "":
+                    del cmd[-1]
+
+                if cmd[0] == 'help':
+                    if len(cmd) > 1:
+                        if cmd[1][0] == '/':
+                            mod = modules.get(cmd[1][1:])
+                        else:
+                            mod = modules.get(cmd[1])
+                        if mod is not None:
+                            mod.help(from_user)
+                        else:
+                            itchat.send_msg(
+                                "Non-existent command name " + cmd[1] + "\nType /help to see all available commands",
+                                from_user)
                     else:
-                        mod = modules.get(cmd[1])
-                    if mod is not None:
-                        mod.help(from_user)
-                    else:
-                        itchat.send_msg(
-                            "Non-existent command name " + cmd[1] + "\nType /help to see all available commands",
-                            from_user)
-                else:
-                    keys = list(modules.keys())
-                    keys.sort()
-                    for module_name in keys:
-                        modules[module_name].help_brief(from_user)
+                        keys = list(modules.keys())
+                        keys.sort()
+                        for module_name in keys:
+                            modules[module_name].help_brief(from_user)
+                        itchat.send_msg("Type /help [command] to get detailed instructions on a specific command",
+                                        from_user)
 
-            elif cmd[0] in modules.keys():
-                if len(session_objects.keys()) + len(session_processes.keys()) > 10:
-                    itchat.send_msg('Too many people sending commands. Please try again later.', from_user)
-                    return
+                elif cmd[0] in modules.keys():
+                    if len(session_objects.keys()) + len(session_processes.keys()) > 10:
+                        itchat.send_msg('Too many people sending commands. Please try again later.', from_user)
+                        return
 
-                mod = modules[cmd[0]]
+                    mod = modules[cmd[0]]
 
-                # interaction required -> create a new object to handle message
-                if mod.interactive:
-                    try:
-                        session_objects[from_user] = mod(from_user, mod.parse_args(from_user, cmd[1:]))
-                        itchat.send_msg("Type /q to quit", from_user)
-                    except Exception as e:
-                        traceback.print_exc()
-                        itchat.send_msg(str(e), from_user)
-
-                # no interaction -> static method call
-                else:
-
-                    # fast_execution -> call in the main thread
-                    if mod.fast_execution:
+                    # interaction required -> create a new object to handle message
+                    if mod.interactive:
                         try:
-                            mod.call(from_user, mod.parse_args(from_user, cmd[1:]))
+                            session_objects[from_user] = mod(from_user, mod.parse_args(from_user, cmd[1:]))
+                            itchat.send_msg("Type /q to quit", from_user)
                         except Exception as e:
                             traceback.print_exc()
                             itchat.send_msg(str(e), from_user)
 
-                    # fast_execution -> create a new process
+                    # no interaction -> static method call
                     else:
-                        try:
-                            session_processes[from_user] = [
-                                Process(target=mod.call, args=(from_user, mod.parse_args(from_user, cmd[1:]),)), cmd[0]]
-                            session_processes[from_user][0].start()
-                            itchat.send_msg("Type /q to stop", from_user)
-                        except Exception as e:
-                            traceback.print_exc()
-                            itchat.send_msg(str(e), from_user)
 
+                        # fast_execution -> call in the main thread
+                        if mod.fast_execution:
+                            try:
+                                mod.call(from_user, mod.parse_args(from_user, cmd[1:]))
+                            except Exception as e:
+                                traceback.print_exc()
+                                itchat.send_msg(str(e), from_user)
+
+                        # fast_execution -> create a new process
+                        else:
+                            try:
+                                session_processes[from_user] = [
+                                    Process(target=mod.call, args=(from_user, mod.parse_args(from_user, cmd[1:]),)),
+                                    cmd[0]]
+                                session_processes[from_user][0].start()
+                                itchat.send_msg("Type /q to stop", from_user)
+                            except Exception as e:
+                                traceback.print_exc()
+                                itchat.send_msg(str(e), from_user)
+
+                else:
+                    itchat.send_msg("\n".join(["Non-existent command {}".format("/" + cmd[0]),
+                                               "Type /help to see all available commands",
+                                               "Type /help [command] to get detailed instructions on a specific command"]),
+                                    from_user)
             else:
-                itchat.send_msg("\n".join(["Non-existent command {}".format("/" + cmd[0]),
+                itchat.send_msg("\n".join(["Error: Empty command body.",
                                            "Type /help to see all available commands",
                                            "Type /help [command] to get detailed instructions on a specific command"]),
                                 from_user)

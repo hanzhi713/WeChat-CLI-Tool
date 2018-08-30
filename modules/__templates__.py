@@ -138,7 +138,8 @@ class Static(ModuleBasics):
             the list of arguments passed from the command line.
             If this method is blocking, you should set fast_execution = False, otherwise set that to True
             
-            Remember to put the following line of code if fast_execution = False, otherwise you won't be able to send messages
+            If multi_process=True in __config__.py and fast_execution = False, you need to add the following line
+            of code before calling itchat.send_msg function:
             itchat.auto_login(hotReload=True)
             
             It is recommended that you only write code that calls itchat.send() here.

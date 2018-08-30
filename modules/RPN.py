@@ -4,8 +4,8 @@ from math import *
 
 
 class RPN(Static):
-    one_param_func = ["sin", "cos", "tan", "atan", "acos", "asin", "floor", "ceil", "factorial"
-        , "radians", "degrees", "sinh", "cosh", "tanh", "acosh", "asinh", "atanh"]
+    one_param_func = ["sin", "cos", "tan", "atan", "acos", "asin", "floor", "ceil", "factorial", "radians", "degrees",
+                      "sinh", "cosh", "tanh", "acosh", "asinh", "atanh"]
 
     two_param_func = ["round", "log", "pow", "atan2", "gcd"]
 
