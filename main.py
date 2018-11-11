@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # load modules in ./modules folder
     modules = dict()
-    for file in os.listdir('./modules'):
+    for file in os.listdir(os.path.join(os.path.dirname(__file__), 'modules')):
         if file.find('__') > -1:
             continue
 
@@ -154,7 +154,7 @@ if __name__ == "__main__":
         global session_objects
         from_user = file['FromUserName']
         if session_objects.get(from_user) is not None:
-            if session_objects[from_user].file_handler(file):
+            if session_objects[from_user].finished or session_objects[from_user].file_handler(file):
                 del session_objects[from_user]
 
 

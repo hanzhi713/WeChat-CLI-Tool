@@ -12,6 +12,9 @@ class Calc24(Static):
     example = "Example: /calc24 2 4 6 8"
     fast_execution = True
 
+    # maximum number of solutions to output
+    num_solutions = 3
+
     @staticmethod
     def eval_postfix(expr):
         token_list = expr
@@ -20,7 +23,10 @@ class Calc24(Static):
             if token in "+-**/":
                 o1 = stack.pop()
                 o2 = stack.pop()
-                stack.append(str(eval(o2 + token + o1)))
+                if token == "/":
+                    if int(o2) // int(o1) != int(o2) / int(o1):
+                        return False
+                stack.append(str(int(eval(o2 + token + o1))))
             else:
                 stack.append(token)
         return float(stack.pop())
@@ -65,14 +71,48 @@ class Calc24(Static):
         operands = ['+', '-', '*', '/']
         nums = args
         results = []
-        for per in list(itertools.permutations(nums, 4)):
-            print(per)
-            for op in list(itertools.permutations(operands, 3)):
-                expr = [per[0], per[1], op[0], per[2], op[1], per[3], op[2]]
-                if cls.eval_postfix(expr) == 24:
-                    results.append(cls.post_to_in(expr))
+        for per in itertools.permutations(nums, 4):
+            for ops in itertools.combinations_with_replacement(operands, 3):
+                for op in itertools.permutations(ops, 3):
+                    expr = [per[0], per[1], op[0], per[2], op[1], per[3], op[2]]
+                    if cls.eval_postfix(expr) == 24:
+                        if expr not in results:
+                            results.append(expr)
         if len(results) == 0:
             itchat.send_msg("No solution!", from_user)
         else:
             for result in results:
-                itchat.send_msg(str(result), from_user)
+                if result[2] == "*" or result[2] == "+":
+                    if result[2] == result[4] and result[4] == result[6]:
+                        idx = 0
+                        for per in itertools.permutations([result[0], result[1], result[3], result[5]]):
+                            if idx == 0:
+                                idx += 1
+                                continue
+                            try:
+                                results.remove([per[0], per[1], result[2], per[2], result[4], per[3], result[6]])
+                            except:
+                                pass
+                    elif result[2] == result[4]:
+                        idx = 0
+                        for per in itertools.permutations([result[0], result[1], result[3]]):
+                            if idx == 0:
+                                idx += 1
+                                continue
+                            try:
+                                results.remove([per[0], per[1], result[2], per[2], result[4], result[5], result[6]])
+                            except:
+                                pass
+                    else:
+                        try:
+                            results.remove(
+                                [result[1], result[0], result[2], result[3], result[4], result[5], result[6]])
+                        except:
+                            pass
+
+            if len(results) > cls.num_solutions:
+                dist = len(results) // cls.num_solutions
+                results = results[0], results[dist], results[-1]
+
+            for result in results:
+                itchat.send_msg(cls.post_to_in(result))
