@@ -5,14 +5,14 @@ from math import *
 
 class RPN(Static):
     one_param_func = ["sin", "cos", "tan", "atan", "acos", "asin", "floor", "ceil", "factorial", "radians", "degrees",
-                      "sinh", "cosh", "tanh", "acosh", "asinh", "atanh"]
+                      "sinh", "cosh", "tanh", "acosh", "asinh", "atanh", "round"]
 
-    two_param_func = ["round", "log", "pow", "atan2", "gcd"]
+    two_param_func = ["log", "pow", "atan2", "gcd"]
 
     __author__ = "Hanzhi Zhou"
     title = "Reverse Polish Notation (RPN) Calculator"
     description = "\n".join(["Evaluate a postfix expression or convert it to infix expression",
-                             "which returns 1.0-2.0", "Supported function: ", " ".join(one_param_func)])
+                             "which returns 1.0-2.0", "Supported function: ", " ".join(one_param_func)], " ".join(two_param_func))
     parameters = "<eval|conv> [expression]"
     alias = "rpn"
     fast_execution = True
@@ -71,7 +71,7 @@ class RPN(Static):
         for i in stack:
             st += str(i) + ' '
 
-        # remove the outermost parentheses
+        # remove the outermost parentheses, if they exist
         if st.startswith("(") and st.endswith(")"):
             st = st[1:len(st) - 1]
         return st
